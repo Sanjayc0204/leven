@@ -1,0 +1,22 @@
+### MongoDB compass is the UI interface for managing local database
+- create a new connection
+- paste the following into mongoShell:
+
+
+### MongoDB atlas is the online database
+
+
+### how to call api request/queries to Mongo:
+
+fetch('/api/users', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Jane Doe',
+    age: 28,
+  }),
+})
+  .then((res) => res.json())
+  .then((data) => console.log(data));
