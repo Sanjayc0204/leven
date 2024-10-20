@@ -19,7 +19,7 @@ interface ICustomization {
   pointsScheme: object;
 }
 
-interface ICommunityModule {
+export interface ICommunityModule {
   moduleId: mongoose.Types.ObjectId;
   settings: object;
 }

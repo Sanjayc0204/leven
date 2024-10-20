@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import User from '@/models/User.model';
-import Community, { ICommunity } from '@/models/Community.model';
+import Community, { ICommunity, ICommunityModule } from '@/models/Community.model';
 import Module, { IModule } from '@/models/Module.model';
 import { connectToDB } from '@/util/connectToDB';
 
@@ -189,6 +189,26 @@ export async function addModuleToCommunity(
   return community;
 }
 
+
+/**
+ * Fetches all modules for a specific community.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @returns {Promise<Array<ICommunityModule>>} - An array of modules associated with the community.
+ */
+export async function getCommunityModules(communityId: Types.ObjectId): Promise<ICommunityModule[]> {
+  // Find the community by its ID and retrieve the modules field
+  const community = await Community.findById(communityId)
+    .select('modules')  // Only select the modules field
+    .populate('modules.moduleId')  // Populate the moduleId with details of the modules
+    .exec();
+
+  if (!community) {
+    throw new Error('Community not found');
+  }
+
+  return community.modules;  // Return the modules array
+}
 
 
 /**
