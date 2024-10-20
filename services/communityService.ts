@@ -86,8 +86,11 @@ export async function getCommunityById(communityId: Types.ObjectId): Promise<ICo
   return Community.findById(communityId);
 }
 
+
+
 /**
- * Updates a community's data. Only the creator or members with the 'admin' role can make changes.
+ * Updates general community's data (image, name, description) + (future visibility settings, notifications, etc). 
+ * Only the creator or members with the 'admin' role can make changes.
  *
  * @param {Types.ObjectId} communityId - ID of the community to update.
  * @param {Partial<ICommunity>} updateData - Data to update the community with.
@@ -120,6 +123,7 @@ export async function updateCommunity(
   await community.save();
   return community;
 }
+
 
 /**
  * Deletes a community and removes it from all users' community lists.
@@ -249,6 +253,91 @@ export async function deleteModuleFromCommunity(
 
 
 
+/**
+ * Adds a user to a community.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community to join.
+ * @param {Types.ObjectId} userId - The ID of the user joining the community.
+ * @returns {Promise<ICommunity>} - The updated community.
+ */
+export async function joinCommunity(communityId: Types.ObjectId, userId: Types.ObjectId): Promise<ICommunity> {
+  // Find the community by ID
+  const community = await Community.findById(communityId);
+  if (!community) {
+    throw new Error('Community not found');
+  }
+
+  // Check if the user is already a member
+  const isAlreadyMember = community.members.some(member => member._id.equals(userId));
+  if (isAlreadyMember) {
+    throw new Error('User is already a member of this community');
+  }
+
+  // Add the user to the community's members list
+  community.members.push({
+    _id: userId,
+    role: 'member',  // New members typically have a 'member' role by default
+    points: 0,
+    moduleProgress: [],  // Initialize module progress as an empty array
+  });
+
+  await community.save();  // Save the updated community
+
+  // Update the user's list of communities
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (!user.communities.includes(communityId)) {
+    user.communities.push(communityId);  // Add the community to the user's list
+  }
+
+  await user.save();  // Save the updated user
+
+  return community;  // Return the updated community document
+}
+
+
+
+import { IUser } from '@/models/User.model'; // Assuming you have a User model and interface
+/**
+ * Fetches a user's stats (points, module progress) within a community.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @param {Types.ObjectId} userId - The ID of the user whose stats are being fetched.
+ * @returns {Promise<Object>} - An object containing the user's stats within the community.
+ */
+export async function getUserStatsInCommunity(communityId: Types.ObjectId, userId: Types.ObjectId): Promise<any> {
+  // Fetch the community and populate the user stats
+  const community = await Community.findById(communityId)
+    .select('members') // Select only members field
+    .populate('members._id', 'username'); // Populate the user details (username)
+
+  if (!community) {
+    throw new Error('Community not found');
+  }
+
+  // Find the user within the community members array
+  const userStats = community.members.find(member => member._id.equals(userId));
+
+  if (!userStats) {
+    throw new Error('User not found in this community');
+  }
+
+  // Cast the populated _id to 'unknown', then to 'IUser'
+  const populatedUser = userStats._id as unknown as IUser;
+
+  // Return user stats (points, module progress, etc.)
+  return {
+    username: populatedUser.username, // Now you can access 'username' after population
+    points: userStats.points,
+    moduleProgress: userStats.moduleProgress,
+  };
+}
+
+
+
 
 /**
  * Allow a user to leave a community.
@@ -278,6 +367,7 @@ export async function leaveCommunity(
   return community;
 }
 
+
 /**
  * Kick a member out of a community (Admin Only).
  *
@@ -286,7 +376,7 @@ export async function leaveCommunity(
  * @param {Types.ObjectId} adminId - The ID of the admin performing the action.
  * @returns {Promise<ICommunity>} - The updated community.
  */
-export async function kickMemberFromCommunity(
+export async function kickMember(
   communityId: Types.ObjectId,
   userId: Types.ObjectId,
   adminId: Types.ObjectId
@@ -314,23 +404,63 @@ export async function kickMemberFromCommunity(
 }
 
 
+/**
+ * Changes the role of a member in a community.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @param {Types.ObjectId} userId - The ID of the member whose role is being changed.
+ * @param {string} newRole - The new role ('admin' or 'member').
+ * @param {Types.ObjectId} adminId - The ID of the admin initiating the role change.
+ * @returns {Promise<void>} - Success message.
+ */
+export async function changeMemberRole(communityId: Types.ObjectId, userId: Types.ObjectId, newRole: 'admin' | 'member', adminId: Types.ObjectId): Promise<void> {
+  // Fetch the community
+  const community = await Community.findById(communityId);
+  if (!community) {
+    throw new Error('Community not found');
+  }
+
+  // Ensure the admin has permission
+  const admin = community.members.find(member => member._id.equals(adminId) && member.role === 'admin');
+  if (!admin) {
+    throw new Error('You are not authorized to change member roles');
+  }
+
+  // Find the member and change their role
+  const member = community.members.find(member => member._id.equals(userId));
+  if (!member) {
+    throw new Error('Member not found in this community');
+  }
+
+  member.role = newRole; // Update the role
+  await community.save();
+}
+
+
+
+
+
 
 /**
  * Return leaderboard information for members of a community, sorted by points.
  *
- * @param {string} communityName - The name of the community.
+ * @param {Types.ObjectId} communityId - The ID of the community.
  * @returns {Promise<IMember[]>} - The members of the community, sorted by points.
  */
-export async function getLeaderboardByCommunityName(
-  communityName: string
+export async function getLeaderboardByCommunityId(
+  communityId: Types.ObjectId
 ): Promise<IMember[]> {
   await connectToDB();
 
-  // Find the community by name and return only the members sorted by points
-  const community = await Community.findOne({ name: communityName })
+  // Ensure proper population of members
+  const community = await Community.findById(communityId)
+    .populate({
+      path: 'members._id', // Populate the '_id' field in 'members'
+      select: 'username _id', // Select only the 'username' and '_id'
+      model: 'User' // Explicitly tell Mongoose to use the 'User' model for population
+    })
     .select('members') // Select only the members field
-    .sort({ 'members.points': -1 }) // Sort by points in descending order
-    .populate('members._id', 'username'); // Populate the user information
+    .sort({ 'members.points': -1 }); // Sort by points in descending order
 
   if (!community) {
     throw new Error('Community not found');
@@ -338,3 +468,6 @@ export async function getLeaderboardByCommunityName(
 
   return community.members; // Return the sorted members
 }
+
+
+

@@ -1,11 +1,17 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema, Model, Types } from 'mongoose';
+import { ICommunity } from '@/models/Community.model'; // Assuming you have this interface
+import Community from '@/models/Community.model';  // Ensure correct path
+
 
 // Define an interface for the User document
 export interface IUser extends Document {
+  _id: mongoose.Types.ObjectId;
   username: string;
   email: string;
   image?: string;
-  communities: mongoose.Types.ObjectId[];
+  // Here, the communities can be either an array of ObjectIds (before population)
+  // or an array of populated ICommunity objects (after population).
+  communities: (Types.ObjectId | Pick<ICommunity, '_id' | 'name'>)[];
   settings: {
     theme: string;
     notifications: boolean;
@@ -29,7 +35,7 @@ const UserSchema: Schema = new mongoose.Schema({
   image: {
     type: String,
   },
-  communities: [{ type: Schema.Types.ObjectId, ref: 'Community' }],
+  communities: [{ type: Schema.Types.ObjectId, ref: 'Community' }],  // Properly reference 'Community'
   settings: {
     theme: { type: String, default: 'light' },
     notifications: { type: Boolean, default: true },

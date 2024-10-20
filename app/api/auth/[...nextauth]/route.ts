@@ -4,7 +4,6 @@ import { connectToDB } from '@/util/connectToDB';
 import User, { IUser } from '@/models/User.model';
 import mongoose from 'mongoose';
 
-// Extend the NextAuth Profile to include the Google 'picture' field
 interface GoogleProfile extends Record<string, any> {
   picture?: string;
 }
@@ -22,7 +21,7 @@ const handler = NextAuth({
 
       const sessionUser: IUser | null = await User.findOne({ email: session.user.email });
       if (sessionUser) {
-        session.user.id = (sessionUser._id as mongoose.Types.ObjectId).toString(); // Add MongoDB ID to session
+        session.user.id = (sessionUser._id as mongoose.Types.ObjectId).toString();
       }
 
       return session;
@@ -34,16 +33,25 @@ const handler = NextAuth({
 
       if (!userExists) {
         // Handle case where user.name is null or undefined, use fallback
-        const username = user.name ? user.name.replace(/\s+/g, '').toLowerCase() : 'default-username';
+        let username = user.name ? user.name.replace(/\s+/g, '').toLowerCase() : 'default-username';
 
-        // Profile is cast as GoogleProfile to ensure 'picture' is handled correctly
+        // Ensure the username is between 8 and 20 characters and is alphanumeric
+        if (username.length < 8) {
+          username += Math.random().toString(36).substring(2, 10); // Add random chars to meet the length requirement
+        }
+        username = username.substring(0, 20);  // Ensure it doesn't exceed 20 characters
+
+        // Remove any non-alphanumeric characters from the username
+        username = username.replace(/[^a-zA-Z0-9]/g, '');
+
+        // Cast the profile as GoogleProfile to ensure 'picture' is handled correctly
         const googleProfile = profile as GoogleProfile;
 
-        // If user doesn't exist, create a new user in the database
+        // Create a new user in the database
         await User.create({
           email: user.email,
           username,
-          image: googleProfile.picture, // Handle the Google profile picture
+          image: googleProfile.picture,
           communities: [],
           settings: {
             theme: 'light',

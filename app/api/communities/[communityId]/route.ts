@@ -37,7 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
 }
 
 /**
- * Update community information, including settings, points, kicking people, customizing, etc.
+ * Update community information, including title, description, image and (future) settings.
  *
  * @param {NextRequest} req - The incoming request object.
  * @param {Object} params - The request parameters.
@@ -105,15 +105,27 @@ export async function DELETE(req: NextRequest, { params }: { params: { community
 
 
 
-// Test:
+// Testing purposes:
 
 // GET http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd
 
-// PUT 
+// PUT http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd
+// JSON:
+// {
+//   "updateData": {
+//     "name": "Leetcode Study Group NYU",
+//     "description": "This is community description.",
+//     "image":"https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/back02.jpg"
+//   },
+//   "adminId": "670b3b2f330b94cfb7710f55"
+// }
 
 // Note: First make a random community
-// DELETE 
-
+// DELETE http://localhost:3000/api/communities/670ecf6e68be8ab7782a7aaa
+// JSON:
+// {
+//   "adminId": "670b3b2f330b94cfb7710f55"
+// }
 
 
 
