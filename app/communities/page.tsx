@@ -31,7 +31,7 @@ export default function Communities() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </div>
-        <div className="flex flex-wrap items-center justify-center ">
+        <div className="flex flex-wrap flex-grow items-center justify-center ">
           <CommunityCardSkeleton />
           <CommunityCardSkeleton />
           <CommunityCardSkeleton />
@@ -58,7 +58,7 @@ export default function Communities() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </div>
-        <div className="flex flex-wrap items-center justify-center ">
+        <div className="flex flex-wrap items-center justify-center m-8 gap-8 ">
           {data.map((community) => (
             <CommunityCard
               imgUrl={community.image}

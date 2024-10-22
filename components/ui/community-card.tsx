@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   CardDescription,
@@ -6,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UsersIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 interface CommunityCardProps {
   imgUrl: string;
@@ -21,30 +23,31 @@ export default function CommunityCard({
   _id,
 }: CommunityCardProps) {
   return (
-    <div id={_id}>
-      {/* Increased card height to accommodate longer titles and more description space */}
-      <Card className="hover:bg-slate-800 hover:text-white transition-col group scale-70 h-[310px] max-h-[350px] max-w-[275px] shadow-md hover:shadow-xl hover:scale-75 transition-transform duration-300 ease-in-out cursor-pointer">
-        <CardHeader className="flex flex-row items-start space-x-3">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={imgUrl} className="h-16 w-16" />
-            <AvatarFallback>CC</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            {/* Title wraps correctly for long text */}
-            <CardTitle className="text-xl font-bold leading-tight">
-              {communityName}
-            </CardTitle>
-            <div className="flex items-center text-base text-muted-foreground mt-1 group-hover:text-slate-200">
-              <UsersIcon className="h-6 w-6 mr-1" />
-              <span>100+</span>
+    <Link href={`/communities/${_id}`} passHref>
+      <div id={_id} className="relative">
+        {" "}
+        {/* Ensure the parent is not clipping overflow */}
+        <Card className="hover:bg-slate-800 hover:text-white transition-colors group h-[240px] max-h-[280px] max-w-[220px] shadow-md hover:shadow-xl cursor-pointer transform hover:scale-105 scale-100 duration-300 ease-in-out">
+          <CardHeader className="flex flex-row items-start space-x-2 p-4">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={imgUrl} />
+              <AvatarFallback>CC</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <CardTitle className="text-base font-bold leading-tight">
+                {communityName}
+              </CardTitle>
+              <div className="flex items-center text-sm text-muted-foreground mt-1 group-hover:text-slate-200 duration-200">
+                <UsersIcon className="h-4 w-4 mr-1" />
+                <span>100+</span>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        {/* Increased max height for description and maintained overflow handling */}
-        <CardDescription className="pl-6 pr-5 pb-6 max-h-[140px] text-lg text-slate-900 overflow-y-auto group-hover:text-white">
-          {communityDescription}
-        </CardDescription>
-      </Card>
-    </div>
+          </CardHeader>
+          <CardDescription className="px-4 pb-4 max-h-[110px] text-sm text-slate-900 overflow-y-auto group-hover:text-white duration-200">
+            {communityDescription}
+          </CardDescription>
+        </Card>
+      </div>
+    </Link>
   );
 }
