@@ -17,14 +17,16 @@ export default function Home() {
             Hey there, let&apos;s get to work.
           </h1>{" "}
           {/* Added margin for spacing */}
-          <Button
-            variant="expandIcon"
-            Icon={ArrowRightIcon}
-            iconPlacement="right"
-          >
-            {" "}
-            <Link href="/communities">Browse Communities</Link>
-          </Button>
+          <Link href="/communities" passHref>
+            <Button
+              variant="expandIcon"
+              Icon={ArrowRightIcon}
+              iconPlacement="right"
+            >
+              {" "}
+              Browse Communities
+            </Button>
+          </Link>
         </div>
       </div>
     </>
