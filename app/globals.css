@@ -6,6 +6,39 @@ body {
   font-family: var(--font-geist-sans), sans-serif;
 }
 
+/* Hide scrollbar arrows and customize the scrollbar for WebKit-based browsers */
+::-webkit-scrollbar {
+  width: 8px; /* Customize scrollbar width */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3); /* Style for the scrollbar thumb */
+  border-radius: 10px; /* Rounded scrollbar */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5); /* Darker thumb on hover */
+}
+
+::-webkit-scrollbar-button {
+  display: none; /* Hide the scrollbar arrows */
+}
+
+/* For Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-button {
+  display: none; /* Hide scrollbar arrows in Firefox */
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

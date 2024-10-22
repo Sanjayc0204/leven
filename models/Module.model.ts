@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema, Model } from "mongoose";
 
 // Define an interface for the Module document
 export interface IModule extends Document {
@@ -23,10 +23,9 @@ const ModuleSchema: Schema = new mongoose.Schema({
 });
 
 // Export the model with the interface
-const Module: Model<IModule> = mongoose.models.Module || mongoose.model<IModule>('Module', ModuleSchema);
+const Module: Model<IModule> =
+  mongoose.models?.Module || mongoose.model<IModule>("Module", ModuleSchema);
 export default Module;
-
-
 
 // import mongoose from 'mongoose';
 

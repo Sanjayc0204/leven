@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import AuthProvider from "@/components/providers/session-provider";
+import QueryClientProvider from "@/components/providers/query-client-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <QueryClientProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

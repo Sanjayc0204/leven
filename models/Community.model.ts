@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from 'mongoose';
+import mongoose, { Document, Schema, Model } from "mongoose";
 
 // Define an interface for the Community document
 interface IModuleProgress {
@@ -9,7 +9,7 @@ interface IModuleProgress {
 
 interface IMember {
   _id: mongoose.Types.ObjectId;
-  role: 'admin' | 'member';
+  role: "admin" | "member";
   points: number;
   moduleProgress: IModuleProgress[];
 }
@@ -38,17 +38,25 @@ export interface ICommunity extends Document {
 
 const CommunitySchema: Schema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: { type: String, default: '' },
-  image: { type: String, default: '' },
-  creator_ID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  description: { type: String, default: "" },
+  image: { type: String, default: "" },
+  creator_ID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   members: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      role: { type: String, enum: ['admin', 'member'], default: 'member' },
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+      role: { type: String, enum: ["admin", "member"], default: "member" },
       points: { type: Number, default: 0 },
       moduleProgress: [
         {
-          moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module' },
+          moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module" },
           totalPoints: { type: Number, default: 0 },
           totalTime: { type: Number, default: 0 },
           _id: false,
@@ -58,7 +66,7 @@ const CommunitySchema: Schema = new mongoose.Schema({
   ],
   customization: [
     {
-      moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module' },
+      moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module" },
       pointsScheme: { type: Object },
     },
   ],
@@ -67,6 +75,8 @@ const CommunitySchema: Schema = new mongoose.Schema({
 });
 
 // Ensure model registration happens once
-const Community: Model<ICommunity> = mongoose.models.Community || mongoose.model<ICommunity>('Community', CommunitySchema);
+const Community: Model<ICommunity> =
+  mongoose.models?.Community ||
+  mongoose.model<ICommunity>("Community", CommunitySchema);
 
 export default Community;

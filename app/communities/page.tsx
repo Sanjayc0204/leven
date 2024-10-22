@@ -1,35 +1,74 @@
+"use client";
+import { Button } from "@/components/ui/button";
+import NavBar from "@/components/ui/navbar";
+import SearchBar from "@/components/ui/searchbar";
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UsersIcon } from "@heroicons/react/24/outline";
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import CommunityCard from "@/components/ui/community-card";
+import { useCommunities } from "@/components/queries/fetchCommunities";
+import CommunityCardSkeleton from "@/components/ui/community-card-skeleton";
+
 export default function Communities() {
-  return (
-    <h1 className="flex h-screen items-center justify-center">
-      <Card className=" scale-70 h-[250px] hover:shadow-xl hover:scale-75 transition-transform duration-300 ease-in-out cursor-pointer">
-        <CardHeader className="flex flex-row flex-grow items-center">
-          <Avatar className="mr-3 h-16 w-16">
-            <AvatarImage
-              src="https://github.com/shadcn.png"
-              className="h-16 w-16"
+  const { isLoading, isError, data, error } = useCommunities("");
+
+  if (isLoading)
+    return (
+      <>
+        <NavBar />
+        <div className="flex items-center justify-center scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-4">
+          <h2>Find Your People</h2>
+        </div>
+        {/* Flex container with center alignment for both SearchBar and Button */}
+        <div className="flex items-center justify-center gap-4">
+          {/* SearchBar will have fixed width */}
+          <SearchBar />
+          {/* Button will have its normal size */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>Filter</Button>
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </div>
+        <div className="flex flex-wrap items-center justify-center ">
+          <CommunityCardSkeleton />
+          <CommunityCardSkeleton />
+          <CommunityCardSkeleton />
+        </div>
+      </>
+    );
+  if (isError) return <div>Error! {error.message}</div>;
+
+  if (data)
+    return (
+      <>
+        <NavBar />
+        <div className="flex items-center justify-center scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-4">
+          <h2>Find Your People</h2>
+        </div>
+        {/* Flex container with center alignment for both SearchBar and Button */}
+        <div className="flex items-center justify-center gap-4">
+          {/* SearchBar will have fixed width */}
+          <SearchBar />
+          {/* Button will have its normal size */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>Filter</Button>
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </div>
+        <div className="flex flex-wrap items-center justify-center ">
+          {data.map((community) => (
+            <CommunityCard
+              imgUrl={community.image}
+              communityName={community.name}
+              communityDescription={community.description}
+              _id={community._id as string}
+              key={community._id as string}
             />
-            <AvatarFallback>CC</AvatarFallback>
-          </Avatar>
-          <div className="mt-0 ml-2">
-            <CardTitle className="text-lg ">Community Name</CardTitle>
-            <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-              <UsersIcon className="h-4 w-4" />
-              <span>1234 members</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardDescription className="px-6">
-          Lorem Ipsum Dolor Sit Amet
-        </CardDescription>
-      </Card>
-    </h1>
-  );
+          ))}
+        </div>
+      </>
+    );
 }

@@ -1,11 +1,11 @@
-'use client'; // Add this at the top to ensure the component is treated as a Client Component
+"use client"; // Add this at the top to ensure the component is treated as a Client Component
 
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <p>Loading...</p>;
   }
 
@@ -15,14 +15,14 @@ export default function HomePage() {
         <p>Welcome, {session.user.name}</p>
         <p>{session.user.email}</p>
         <button onClick={() => signOut()}>Sign out</button>
-      </div>  
+      </div>
     );
   }
 
   return (
     <div>
       <p>You are not signed in.</p>
-      <button onClick={() => signIn('google')}>Sign in with Google</button>
+      <button onClick={() => signIn("google")}>Sign in with Google</button>
     </div>
   );
 }
