@@ -9,6 +9,7 @@ import {
 import CommunityCard from "@/components/ui/community-card";
 import { useCommunities } from "@/components/queries/fetchCommunities";
 import CommunityCardSkeleton from "@/components/ui/community-card-skeleton";
+import LargeCommunityCard from "@/components/ui/community-card-lg";
 
 export default function Communities() {
   const { isLoading, isError, data, error } = useCommunities("");
@@ -60,7 +61,7 @@ export default function Communities() {
         </div>
         <div className="flex flex-wrap items-center justify-center m-8 gap-8 ">
           {data.map((community) => (
-            <CommunityCard
+            <LargeCommunityCard
               imgUrl={community.image}
               communityName={community.name}
               communityDescription={community.description}

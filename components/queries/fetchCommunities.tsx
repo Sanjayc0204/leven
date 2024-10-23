@@ -3,8 +3,8 @@ import { ICommunity } from "@/models/Community.model";
 import { useQuery } from "@tanstack/react-query";
 
 // Function to fetch communities from the API
-const fetchCommunities = async (searchQuery = ""): Promise<ICommunity[]> => {
-  const res = await fetch(`/api/communities/all?searchQuery=${searchQuery}`);
+const fetchCommunities = async (): Promise<ICommunity[]> => {
+  const res = await fetch(`/api/communities/all`);
   if (!res.ok) {
     throw new Error("Failed to fetch communities");
   }
@@ -12,9 +12,9 @@ const fetchCommunities = async (searchQuery = ""): Promise<ICommunity[]> => {
 };
 
 // Custom React Query hook to fetch communities
-export const useCommunities = (searchQuery = "") => {
+export const useCommunities = () => {
   return useQuery<ICommunity[], Error>({
-    queryKey: ["communities", searchQuery], // queryKey is passed as part of the options object
-    queryFn: () => fetchCommunities(searchQuery), // queryFn also goes inside the options object
+    queryKey: ["communities"], // queryKey is passed as part of the options object
+    queryFn: () => fetchCommunities(), // queryFn also goes inside the options object
   });
 };

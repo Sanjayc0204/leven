@@ -2,8 +2,7 @@
 
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
 import { AppSidebar } from "@/components/ui/app-sidebar";
-
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 
 interface CommunityPageProps {
   params: { communityId: string };
@@ -23,11 +22,11 @@ export default function CommunityPage({ params }: CommunityPageProps) {
   if (data) {
     return (
       <>
-        <SidebarProvider>
-          <AppSidebar communityName={data.name} />
-          <SidebarTrigger />
-          <div>Yay!</div>;
-        </SidebarProvider>
+        <AppSidebar communityName={data.name} />
+        {/* <div className="p-4 text-sm">
+          <CustomTrigger />
+        </div> */}
+        <SidebarInset />
       </>
     );
   }
