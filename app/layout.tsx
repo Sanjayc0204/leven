@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import AuthProvider from "@/components/providers/session-provider";
 import QueryClientProvider from "@/components/providers/query-client-provider";
+import { ClientSidebarWrapper } from "@/components/clients/sidebar-client";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,9 +31,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryClientProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </QueryClientProvider>
+        <AuthProvider>
+          <QueryClientProvider>
+            <ClientSidebarWrapper>{children}</ClientSidebarWrapper>
+          </QueryClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -37,7 +37,7 @@ export default function CommunityCard({
               <CardTitle className="text-base font-bold leading-tight">
                 {communityName}
               </CardTitle>
-              <div className="flex items-center text-sm text-muted-foreground mt-1 group-hover:text-slate-200 duration-200">
+              <div className="flex items-center text-xs text-muted-foreground mt-1 group-hover:text-slate-200 duration-200">
                 <UsersIcon className="h-4 w-4 mr-1" />
                 <span>100+</span>
               </div>
