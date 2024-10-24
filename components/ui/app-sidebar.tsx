@@ -24,8 +24,9 @@ import {
   BreadcrumbSeparator,
 } from "./breadcrumb";
 import Link from "next/link";
+import { LayoutDashboardIcon } from "lucide-react";
 
-// Menu items.
+// Static Menu items outside the component
 const items = [
   {
     title: "Communities",
@@ -41,6 +42,21 @@ interface AppSidebarProps {
 export function AppSidebar({ communityName }: AppSidebarProps) {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter(Boolean);
+
+  // Determine relative dashboard URL
+  const dashboardPath = pathname.includes("dashboard")
+    ? pathname
+    : `${pathname}/dashboard`;
+
+  // Dynamic menu items inside the component
+  const dynamicItems = [
+    {
+      title: "Dashboard",
+      url: dashboardPath, // Dynamically generate the dashboard path
+      icon: LayoutDashboardIcon,
+    },
+  ];
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -49,7 +65,7 @@ export function AppSidebar({ communityName }: AppSidebarProps) {
             <SidebarGroupLabel>{communityName}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
+                {[...items, ...dynamicItems].map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <Link href={item.url}>
                       <SidebarMenuButton asChild>

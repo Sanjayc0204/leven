@@ -1,5 +1,6 @@
 "use client";
 
+import { useCommunityStore } from "@/app/store/communityStore";
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
@@ -11,6 +12,7 @@ interface CommunityPageProps {
 export default function CommunityPage({ params }: CommunityPageProps) {
   const { communityId } = params;
   const { isLoading, isError, data, error } = useCommunityById(communityId);
+  const setCommunity = useCommunityStore((state) => state.setCommunityData);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -20,6 +22,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
     return <div>Error! {error.message}</div>;
   }
   if (data) {
+    setCommunity(data);
     return (
       <>
         <AppSidebar communityName={data.name} />

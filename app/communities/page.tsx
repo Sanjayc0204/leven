@@ -6,13 +6,12 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import CommunityCard from "@/components/ui/community-card";
 import { useCommunities } from "@/components/queries/fetchCommunities";
 import CommunityCardSkeleton from "@/components/ui/community-card-skeleton";
 import LargeCommunityCard from "@/components/ui/community-card-lg";
 
 export default function Communities() {
-  const { isLoading, isError, data, error } = useCommunities("");
+  const { isLoading, isError, data, error } = useCommunities();
 
   if (isLoading)
     return (
