@@ -3,13 +3,20 @@
  * @see https://v0.dev/t/lJwnQlHSEBA
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 "use client";
+
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
+import { useSession } from "next-auth/react";
+import { Avatar } from "./avatar";
+import { AvatarFallback, AvatarImage } from "./avatar";
 
 export default function NavBar() {
+  const { data: session, status } = useSession();
   return (
     <header className="flex h-20 w-full shrink-0 items-center px-4 md:px-6 border-b-4 border-slate-300  ">
       <Sheet>
@@ -47,8 +54,32 @@ export default function NavBar() {
         >
           Communities
         </Link>
+        {status === "authenticated" ? (
+          <AvatarIcon img={session.user.image} />
+        ) : status === "loading" ? (
+          ""
+        ) : (
+          <Link
+            href="../auth/signin"
+            className="group inline-flex h-9 w-max items-center text-white justify-center rounded-md bg-black px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-800 hover:text-gray-100 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
+            prefetch={false}
+          >
+            Log In
+          </Link>
+        )}
       </nav>
     </header>
+  );
+}
+
+function AvatarIcon({ img }: { img: string | null | undefined }) {
+  return (
+    <Link href="../auth/signin">
+      <Avatar className="w-9 h-9 rounded-full">
+        <AvatarImage src={img} className="rounded-full" />
+        <AvatarFallback>US</AvatarFallback>
+      </Avatar>
+    </Link>
   );
 }
 

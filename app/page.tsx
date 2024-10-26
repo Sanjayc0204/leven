@@ -6,14 +6,15 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <>
+    <div className="h-screen flex flex-col">
       <NavBar />
-      <div className="flex flex-col items-center justify-center">
+      <div className="flex-grow flex items-center justify-center">
         <div className="text-center">
           {/* Center the text and button */}
-          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-4">
-            Hey there, let&apos;s get to work.
+          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-0">
+            Condyte
           </h1>
+          <h2 className="text-muted-foreground p-1">Get better, together</h2>
           <Link href="/communities" passHref>
             <Button
               variant="expandIcon"
@@ -25,6 +26,6 @@ export default function Home() {
           </Link>
         </div>
       </div>
-    </>
+    </div>
   );
 }
