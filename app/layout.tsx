@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import AuthProvider from "@/components/providers/session-provider";
+import QueryClientProvider from "@/components/providers/query-client-provider";
+import { ClientSidebarWrapper } from "@/components/clients/sidebar-client";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,7 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          <QueryClientProvider>
+            <ClientSidebarWrapper>
+              <NextTopLoader color="black" showSpinner={false} />
+              {children}
+            </ClientSidebarWrapper>
+          </QueryClientProvider>
+        </AuthProvider>
       </body>
     </html>
   );

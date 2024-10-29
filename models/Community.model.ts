@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model, Types } from 'mongoose';
+import mongoose, { Document, Schema, Model, Types } from "mongoose";
 
 // Define interfaces for subdocuments
 interface IModuleProgress {
@@ -9,7 +9,7 @@ interface IModuleProgress {
 
 interface IMember {
   _id: mongoose.Types.ObjectId;
-  role: 'admin' | 'member';
+  role: "admin" | "member";
   points: number;
   moduleProgress: IModuleProgress[];
 }
@@ -40,17 +40,31 @@ export interface ICommunity extends Document {
 // Define the schema with optimized fields
 const CommunitySchema: Schema = new mongoose.Schema({
   name: { type: String, required: true },
-  description: { type: String, default: '' },
-  image: { type: String, default: '' },
-  creator_ID: { type: mongoose.Types.ObjectId, ref: 'User', required: true, index: true }, // Indexed for faster lookups
+  description: { type: String, default: "" },
+  image: { type: String, default: "" },
+  creator_ID: {
+    type: mongoose.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true,
+  }, // Indexed for faster lookups
   members: [
     {
-      _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true }, // Indexed for querying by member
-      role: { type: String, enum: ['admin', 'member'], default: 'member' },
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true,
+      }, // Indexed for querying by member
+      role: { type: String, enum: ["admin", "member"], default: "member" },
       points: { type: Number, default: 0 },
       moduleProgress: [
         {
-          moduleId: { type: mongoose.Types.ObjectId, ref: 'Module', required: true },
+          moduleId: {
+            type: mongoose.Types.ObjectId,
+            ref: "Module",
+            required: true,
+          },
           totalPoints: { type: Number, default: 0 },
           totalTime: { type: Number, default: 0 },
         },
@@ -59,13 +73,21 @@ const CommunitySchema: Schema = new mongoose.Schema({
   ],
   customization: [
     {
-      moduleId: { type: mongoose.Types.ObjectId, ref: 'Module', required: true },
+      moduleId: {
+        type: mongoose.Types.ObjectId,
+        ref: "Module",
+        required: true,
+      },
       pointsScheme: { type: Object, default: {} },
     },
   ],
   modules: [
     {
-      moduleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Module', required: true },
+      moduleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Module",
+        required: true,
+      },
       settings: { type: Object, default: {} },
     },
   ],
@@ -74,15 +96,11 @@ const CommunitySchema: Schema = new mongoose.Schema({
 });
 
 // Export model with the interface
-const Community: Model<ICommunity> = mongoose.models.Community || mongoose.model<ICommunity>('Community', CommunitySchema);
+const Community: Model<ICommunity> =
+  mongoose.models.Community ||
+  mongoose.model<ICommunity>("Community", CommunitySchema);
 
 export default Community;
-
-
-
-
-
-
 
 // import mongoose, { Document, Schema, Model } from 'mongoose';
 // import { kebabCase } from 'lodash';  // Optional: use lodash for kebab case transformation

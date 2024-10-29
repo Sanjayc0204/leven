@@ -1,15 +1,22 @@
-import { Types } from 'mongoose';
-import User from '@/models/User.model';
-import Community, { ICommunity, ICommunityModule } from '@/models/Community.model';
-import Module, { IModule } from '@/models/Module.model';
-import { connectToDB } from '@/util/connectToDB';
+import { Types } from "mongoose";
+import User from "@/models/User.model";
+import Community, {
+  ICommunity,
+  ICommunityModule,
+} from "@/models/Community.model";
+import Module, { IModule } from "@/models/Module.model";
+import { connectToDB } from "@/util/connectToDB";
 
 // Interface for what a community member should look like
 interface IMember {
   _id: Types.ObjectId;
-  role: 'admin' | 'member';
+  role: "admin" | "member";
   points: number;
-  moduleProgress: Array<{ moduleId: Types.ObjectId, totalPoints: number, totalTime: number }>;
+  moduleProgress: Array<{
+    moduleId: Types.ObjectId;
+    totalPoints: number;
+    totalTime: number;
+  }>;
 }
 
 /**
@@ -18,21 +25,23 @@ interface IMember {
  * @param {string} [searchQuery] - Optional search query for communities.
  * @returns {Promise<ICommunity[]>} - List of communities that match the search or top 10.
  */
-export async function fetchAllCommunities(searchQuery?: string): Promise<ICommunity[]> {
+export async function fetchAllCommunities(
+  searchQuery?: string
+): Promise<ICommunity[]> {
   await connectToDB();
-  
+
   let communities: ICommunity[] = [];
 
   if (searchQuery) {
     // Search for communities matching the query (case-insensitive)
     communities = await Community.find({
-      name: { $regex: searchQuery, $options: 'i' },
+      name: { $regex: searchQuery, $options: "i" },
     });
   } else {
     // Return top 10 communities
     communities = await Community.find({}).limit(10);
   }
-
+  console.log(communities);
   return communities;
 }
 
@@ -46,9 +55,9 @@ export async function fetchAllCommunities(searchQuery?: string): Promise<ICommun
  * @returns {Promise<ICommunity>} - The created community.
  */
 export async function createCommunity(
-  name: string, 
-  creatorId: Types.ObjectId, 
-  description: string, 
+  name: string,
+  creatorId: Types.ObjectId,
+  description: string,
   image: string
 ): Promise<ICommunity> {
   await connectToDB();
@@ -59,10 +68,10 @@ export async function createCommunity(
     image,
     creator_ID: creatorId,
     members: [
-      { 
-        _id: creatorId, 
-        role: 'admin', 
-        points: 0, 
+      {
+        _id: creatorId,
+        role: "admin",
+        points: 0,
         moduleProgress: [],
       },
     ],
@@ -81,15 +90,15 @@ export async function createCommunity(
  * @param {Types.ObjectId} communityId - Community ID.
  * @returns {Promise<ICommunity | null>} - The found community or null if not found.
  */
-export async function getCommunityById(communityId: Types.ObjectId): Promise<ICommunity | null> {
+export async function getCommunityById(
+  communityId: Types.ObjectId
+): Promise<ICommunity | null> {
   await connectToDB();
   return Community.findById(communityId);
 }
 
-
-
 /**
- * Updates general community's data (image, name, description) + (future visibility settings, notifications, etc). 
+ * Updates general community's data (image, name, description) + (future visibility settings, notifications, etc).
  * Only the creator or members with the 'admin' role can make changes.
  *
  * @param {Types.ObjectId} communityId - ID of the community to update.
@@ -98,32 +107,33 @@ export async function getCommunityById(communityId: Types.ObjectId): Promise<ICo
  * @returns {Promise<ICommunity>} - The updated community.
  */
 export async function updateCommunity(
-  communityId: Types.ObjectId, 
-  updateData: Partial<ICommunity>, 
+  communityId: Types.ObjectId,
+  updateData: Partial<ICommunity>,
   userId: Types.ObjectId
 ): Promise<ICommunity> {
   await connectToDB();
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   const isCreator = community.creator_ID.toString() === userId.toString();
-  const member = community.members.find(m => m._id.toString() === userId.toString() && m.role === 'admin');
+  const member = community.members.find(
+    (m) => m._id.toString() === userId.toString() && m.role === "admin"
+  );
 
   if (!isCreator && !member) {
-    throw new Error('You are not authorized to update this community');
+    throw new Error("You are not authorized to update this community");
   }
 
-  Object.keys(updateData).forEach(key => {
+  Object.keys(updateData).forEach((key) => {
     (community as any)[key] = updateData[key as keyof ICommunity];
   });
 
   await community.save();
   return community;
 }
-
 
 /**
  * Deletes a community and removes it from all users' community lists.
@@ -132,17 +142,20 @@ export async function updateCommunity(
  * @param {Types.ObjectId} adminId - The ID of the admin attempting to delete the community.
  * @returns {Promise<{ message: string }>} - Success message.
  */
-export async function deleteCommunity(communityId: Types.ObjectId, adminId: Types.ObjectId): Promise<{ message: string }> {
+export async function deleteCommunity(
+  communityId: Types.ObjectId,
+  adminId: Types.ObjectId
+): Promise<{ message: string }> {
   await connectToDB();
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   const isCreator = community.creator_ID.toString() === adminId.toString();
   if (!isCreator) {
-    throw new Error('You are not authorized to delete this community');
+    throw new Error("You are not authorized to delete this community");
   }
 
   await User.updateMany(
@@ -150,11 +163,11 @@ export async function deleteCommunity(communityId: Types.ObjectId, adminId: Type
     { $pull: { communities: communityId } }
   );
 
-  await community.deleteOne();   // 
-  return { message: 'Community and associated references deleted successfully' };
+  await community.deleteOne(); //
+  return {
+    message: "Community and associated references deleted successfully",
+  };
 }
-
-
 
 /**
  * Add a module to a community (Admin Only).
@@ -171,12 +184,12 @@ export async function addModuleToCommunity(
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   const module = await Module.findById(moduleId);
   if (!module) {
-    throw new Error('Module not found');
+    throw new Error("Module not found");
   }
 
   // Initialize modules array if undefined and then add the module
@@ -215,12 +228,11 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
     .exec();
 
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   return community.modules;
 }
-
 
 /**
  * Customize a module within a community (Admin Only).
@@ -239,13 +251,15 @@ export async function customizeModule(
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Find the specific module in the community
-  const module = community.modules.find(mod => mod.moduleId.toString() === moduleId.toString());
+  const module = community.modules.find(
+    (mod) => mod.moduleId.toString() === moduleId.toString()
+  );
   if (!module) {
-    throw new Error('Module not found in community');
+    throw new Error("Module not found in community");
   }
 
   // Update the module settings
@@ -254,8 +268,6 @@ export async function customizeModule(
   await community.save();
   return community;
 }
-
-
 
 /**
  * Delete a module from a community (Admin Only).
@@ -272,17 +284,17 @@ export async function deleteModuleFromCommunity(
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Remove the module from the community's module list
-  community.modules = community.modules.filter(mod => mod.moduleId.toString() !== moduleId.toString());
+  community.modules = community.modules.filter(
+    (mod) => mod.moduleId.toString() !== moduleId.toString()
+  );
 
   await community.save();
-  return { message: 'Module removed successfully' };
+  return { message: "Module removed successfully" };
 }
-
-
 
 /**
  * Adds a user to a community.
@@ -291,47 +303,50 @@ export async function deleteModuleFromCommunity(
  * @param {Types.ObjectId} userId - The ID of the user joining the community.
  * @returns {Promise<ICommunity>} - The updated community.
  */
-export async function joinCommunity(communityId: Types.ObjectId, userId: Types.ObjectId): Promise<ICommunity> {
+export async function joinCommunity(
+  communityId: Types.ObjectId,
+  userId: Types.ObjectId
+): Promise<ICommunity> {
   // Find the community by ID
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Check if the user is already a member
-  const isAlreadyMember = community.members.some(member => member._id.equals(userId));
+  const isAlreadyMember = community.members.some((member) =>
+    member._id.equals(userId)
+  );
   if (isAlreadyMember) {
-    throw new Error('User is already a member of this community');
+    throw new Error("User is already a member of this community");
   }
 
   // Add the user to the community's members list
   community.members.push({
     _id: userId,
-    role: 'member',  // New members typically have a 'member' role by default
+    role: "member", // New members typically have a 'member' role by default
     points: 0,
-    moduleProgress: [],  // Initialize module progress as an empty array
+    moduleProgress: [], // Initialize module progress as an empty array
   });
 
-  await community.save();  // Save the updated community
+  await community.save(); // Save the updated community
 
   // Update the user's list of communities
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   if (!user.communities.includes(communityId)) {
-    user.communities.push(communityId);  // Add the community to the user's list
+    user.communities.push(communityId); // Add the community to the user's list
   }
 
-  await user.save();  // Save the updated user
+  await user.save(); // Save the updated user
 
-  return community;  // Return the updated community document
+  return community; // Return the updated community document
 }
 
-
-
-import { IUser } from '@/models/User.model'; // Assuming you have a User model and interface
+import { IUser } from "@/models/User.model"; // Assuming you have a User model and interface
 /**
  * Fetches a user's stats (points, module progress) within a community.
  *
@@ -339,21 +354,26 @@ import { IUser } from '@/models/User.model'; // Assuming you have a User model a
  * @param {Types.ObjectId} userId - The ID of the user whose stats are being fetched.
  * @returns {Promise<Object>} - An object containing the user's stats within the community.
  */
-export async function getUserStatsInCommunity(communityId: Types.ObjectId, userId: Types.ObjectId): Promise<any> {
+export async function getUserStatsInCommunity(
+  communityId: Types.ObjectId,
+  userId: Types.ObjectId
+): Promise<any> {
   // Fetch the community and populate the user stats
   const community = await Community.findById(communityId)
-    .select('members') // Select only members field
-    .populate('members._id', 'username'); // Populate the user details (username)
+    .select("members") // Select only members field
+    .populate("members._id", "username"); // Populate the user details (username)
 
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Find the user within the community members array
-  const userStats = community.members.find(member => member._id.equals(userId));
+  const userStats = community.members.find((member) =>
+    member._id.equals(userId)
+  );
 
   if (!userStats) {
-    throw new Error('User not found in this community');
+    throw new Error("User not found in this community");
   }
 
   // Cast the populated _id to 'unknown', then to 'IUser'
@@ -365,9 +385,6 @@ export async function getUserStatsInCommunity(communityId: Types.ObjectId, userI
     moduleProgress: userStats.moduleProgress,
   };
 }
-
-
-
 
 /**
  * Allow a user to leave a community.
@@ -384,11 +401,13 @@ export async function leaveCommunity(
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Remove the user from the community's members list
-  community.members = community.members.filter(member => !member._id.equals(userId));
+  community.members = community.members.filter(
+    (member) => !member._id.equals(userId)
+  );
   await community.save();
 
   // Remove the community from the user's communities list
@@ -396,7 +415,6 @@ export async function leaveCommunity(
 
   return community;
 }
-
 
 /**
  * Kick a member out of a community (Admin Only).
@@ -415,16 +433,22 @@ export async function kickMember(
 
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Ensure the admin is authorized
-  if (!community.members.find(member => member._id.equals(adminId) && member.role === 'admin')) {
-    throw new Error('Unauthorized');
+  if (
+    !community.members.find(
+      (member) => member._id.equals(adminId) && member.role === "admin"
+    )
+  ) {
+    throw new Error("Unauthorized");
   }
 
   // Remove the member from the community
-  community.members = community.members.filter(member => !member._id.equals(userId));
+  community.members = community.members.filter(
+    (member) => !member._id.equals(userId)
+  );
   await community.save();
 
   // Remove the community from the user's list of communities
@@ -432,7 +456,6 @@ export async function kickMember(
 
   return community;
 }
-
 
 /**
  * Changes the role of a member in a community.
@@ -443,23 +466,30 @@ export async function kickMember(
  * @param {Types.ObjectId} adminId - The ID of the admin initiating the role change.
  * @returns {Promise<void>} - Success message.
  */
-export async function changeMemberRole(communityId: Types.ObjectId, userId: Types.ObjectId, newRole: 'admin' | 'member', adminId: Types.ObjectId): Promise<void> {
+export async function changeMemberRole(
+  communityId: Types.ObjectId,
+  userId: Types.ObjectId,
+  newRole: "admin" | "member",
+  adminId: Types.ObjectId
+): Promise<void> {
   // Fetch the community
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Ensure the admin has permission
-  const admin = community.members.find(member => member._id.equals(adminId) && member.role === 'admin');
+  const admin = community.members.find(
+    (member) => member._id.equals(adminId) && member.role === "admin"
+  );
   if (!admin) {
-    throw new Error('You are not authorized to change member roles');
+    throw new Error("You are not authorized to change member roles");
   }
 
   // Find the member and change their role
-  const member = community.members.find(member => member._id.equals(userId));
+  const member = community.members.find((member) => member._id.equals(userId));
   if (!member) {
-    throw new Error('Member not found in this community');
+    throw new Error("Member not found in this community");
   }
 
   member.role = newRole; // Update the role
@@ -490,7 +520,7 @@ export async function getLeaderboardByCommunityId(
   console.log("Community found:", community);
 
   if (!community) {
-    throw new Error('Community not found');
+    throw new Error("Community not found");
   }
 
   // Filter and map members for leaderboard

@@ -1,11 +1,13 @@
-import NextAuth from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import { connectToDB } from '@/util/connectToDB';
-import User, { IUser } from '@/models/User.model';
-import mongoose from 'mongoose';
+import NextAuth from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { connectToDB } from "@/util/connectToDB";
+import User, { IUser } from "@/models/User.model";
+import mongoose from "mongoose";
 
-interface GoogleProfile extends Record<string, any> {
+interface GoogleProfile {
   picture?: string;
+  email?: string;
+  name?: string;
 }
 
 const handler = NextAuth({
@@ -19,9 +21,13 @@ const handler = NextAuth({
     async session({ session }) {
       await connectToDB();
 
-      const sessionUser: IUser | null = await User.findOne({ email: session.user.email });
+      const sessionUser: IUser | null = await User.findOne({
+        email: session.user.email,
+      });
       if (sessionUser) {
-        session.user.id = (sessionUser._id as mongoose.Types.ObjectId).toString();
+        session.user.id = (
+          sessionUser._id as mongoose.Types.ObjectId
+        ).toString();
       }
 
       return session;
@@ -33,16 +39,18 @@ const handler = NextAuth({
 
       if (!userExists) {
         // Handle case where user.name is null or undefined, use fallback
-        let username = user.name ? user.name.replace(/\s+/g, '').toLowerCase() : 'default-username';
+        let username = user.name
+          ? user.name.replace(/\s+/g, "").toLowerCase()
+          : "default-username";
 
         // Ensure the username is between 8 and 20 characters and is alphanumeric
         if (username.length < 8) {
           username += Math.random().toString(36).substring(2, 10); // Add random chars to meet the length requirement
         }
-        username = username.substring(0, 20);  // Ensure it doesn't exceed 20 characters
+        username = username.substring(0, 20); // Ensure it doesn't exceed 20 characters
 
         // Remove any non-alphanumeric characters from the username
-        username = username.replace(/[^a-zA-Z0-9]/g, '');
+        username = username.replace(/[^a-zA-Z0-9]/g, "");
 
         // Cast the profile as GoogleProfile to ensure 'picture' is handled correctly
         const googleProfile = profile as GoogleProfile;
@@ -54,7 +62,7 @@ const handler = NextAuth({
           image: googleProfile.picture,
           communities: [],
           settings: {
-            theme: 'light',
+            theme: "light",
             notifications: true,
           },
           last_login_date: new Date(),
@@ -64,7 +72,10 @@ const handler = NextAuth({
         // If user exists, update profile picture and last login date
         const googleProfile = profile as GoogleProfile;
 
-        if (googleProfile.picture && userExists.image !== googleProfile.picture) {
+        if (
+          googleProfile.picture &&
+          userExists.image !== googleProfile.picture
+        ) {
           userExists.image = googleProfile.picture;
         }
 

@@ -1,7 +1,6 @@
-import mongoose, { Document, Schema, Model, Types } from 'mongoose';
-import { ICommunity } from '@/models/Community.model'; // Assuming you have this interface
-import Community from '@/models/Community.model';  // Ensure correct path
-
+import mongoose, { Document, Schema, Model, Types } from "mongoose";
+import { ICommunity } from "@/models/Community.model"; // Assuming you have this interface
+import Community from "@/models/Community.model"; // Ensure correct path
 
 // Define an interface for the User document
 export interface IUser extends Document {
@@ -11,7 +10,7 @@ export interface IUser extends Document {
   image?: string;
   // Here, the communities can be either an array of ObjectIds (before population)
   // or an array of populated ICommunity objects (after population).
-  communities: (Types.ObjectId | Pick<ICommunity, '_id' | 'name'>)[];
+  communities: (Types.ObjectId | Pick<ICommunity, "_id" | "name">)[];
   settings: {
     theme: string;
     notifications: boolean;
@@ -24,20 +23,23 @@ export interface IUser extends Document {
 const UserSchema: Schema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, 'Username is required!'],
-    match: [/^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, 'Username invalid, it should contain 8-20 alphanumeric letters and be unique!'],
+    required: [true, "Username is required!"],
+    match: [
+      /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/,
+      "Username invalid, it should contain 8-20 alphanumeric letters and be unique!",
+    ],
   },
   email: {
     type: String,
-    unique: [true, 'Email already exists!'],
-    required: [true, 'Email is required!'],
+    unique: [true, "Email already exists!"],
+    required: [true, "Email is required!"],
   },
   image: {
     type: String,
   },
-  communities: [{ type: Schema.Types.ObjectId, ref: 'Community' }],  // Properly reference 'Community'
+  communities: [{ type: Schema.Types.ObjectId, ref: "Community" }], // Properly reference 'Community'
   settings: {
-    theme: { type: String, default: 'light' },
+    theme: { type: String, default: "light" },
     notifications: { type: Boolean, default: true },
   },
   last_login_date: { type: Date, default: Date.now },
@@ -45,54 +47,34 @@ const UserSchema: Schema = new mongoose.Schema({
 });
 
 // Export the model with the interface
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+const User: Model<IUser> =
+  mongoose.models?.User || mongoose.model<IUser>("User", UserSchema);
 export default User;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { Schema, model, models } from 'mongoose';
 
 // const UserSchema = new Schema({
-//   username: { 
+//   username: {
 //     type: String,
 //     required: [true, 'Username is required!'],
 //     match: [/^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/, "Username invalid, it should contain 8-20 alphanumeric letters and be unique!"]
 //    },
 
-//   email: { 
+//   email: {
 //     type: String,
 //     unique: [true, 'Email already exists!'],
 //     required: [true, 'Email is required!'],
 //   },
-  
+
 //   image: {
 //     type: String
 //   },
 
-//   communities: [{ 
+//   communities: [{
 //     type: Schema.Types.ObjectId, ref: 'Community' }],
 
 //   settings: {
-//     theme: { 
+//     theme: {
 //       type: String,
 //       default: 'light' },  // Store user’s preferred theme
 
@@ -107,6 +89,3 @@ export default User;
 // const User = models.User || model("User", UserSchema);
 
 // export default User;
-
-
-
