@@ -201,18 +201,24 @@ export async function addModuleToCommunity(
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @returns {Promise<Array<ICommunityModule>>} - An array of modules associated with the community.
  */
+
 export async function getCommunityModules(communityId: Types.ObjectId): Promise<ICommunityModule[]> {
-  // Find the community by its ID and retrieve the modules field
+  await connectToDB(); // Ensure the DB is connected
+
+  // Query the community and populate modules
   const community = await Community.findById(communityId)
-    .select('modules')  // Only select the modules field
-    .populate('modules.moduleId')  // Populate the moduleId with details of the modules
+    .select('modules')
+    .populate({
+      path: 'modules.moduleId',
+      select: 'name moduleType customizations', // Only select necessary fields from Module
+    })
     .exec();
 
   if (!community) {
     throw new Error('Community not found');
   }
 
-  return community.modules;  // Return the modules array
+  return community.modules;
 }
 
 
