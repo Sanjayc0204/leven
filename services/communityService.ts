@@ -192,15 +192,21 @@ export async function addModuleToCommunity(
     throw new Error("Module not found");
   }
 
-  // Add the module to the community
+  // Initialize modules array if undefined and then add the module
+  if (!community.modules) {
+    community.modules = [];
+  }
+
   community.modules.push({
-    moduleId: module._id as Types.ObjectId, // Explicit type assertion for module._id
+    moduleId: module._id as Types.ObjectId,
     settings: {}, // Default settings for the module
   });
 
   await community.save();
   return community;
 }
+
+
 
 /**
  * Fetches all modules for a specific community.
@@ -372,7 +378,6 @@ export async function getUserStatsInCommunity(
   // Return user stats (points, module progress, etc.)
   return {
     username: populatedUser.username, // Now you can access 'username' after population
-    points: userStats.points,
     moduleProgress: userStats.moduleProgress,
   };
 }
@@ -487,30 +492,114 @@ export async function changeMemberRole(
   await community.save();
 }
 
+
 /**
- * Return leaderboard information for members of a community, sorted by points.
+ * Fetch leaderboard data based on general points for each member.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
- * @returns {Promise<IMember[]>} - The members of the community, sorted by points.
+ * @returns {Promise<Array<{ userId: string; username: string; image: string; totalPoints: number }>>} - Leaderboard sorted by general points.
  */
 export async function getLeaderboardByCommunityId(
   communityId: Types.ObjectId
-): Promise<IMember[]> {
+): Promise<Array<{ userId: string; username: string; image: string; totalPoints: number }>> {
   await connectToDB();
 
-  // Ensure proper population of members
+  // Fetch the community and populate members with user details
   const community = await Community.findById(communityId)
     .populate({
-      path: "members._id", // Populate the '_id' field in 'members'
-      select: "username _id", // Select only the 'username' and '_id'
-      model: "User", // Explicitly tell Mongoose to use the 'User' model for population
+      path: 'members._id',
+      select: 'username image', // Populate username and image
+      model: 'User',
     })
-    .select("members") // Select only the members field
-    .sort({ "members.points": -1 }); // Sort by points in descending order
+    .select('members');
+
+  console.log("Community found:", community);
 
   if (!community) {
     throw new Error("Community not found");
   }
 
-  return community.members; // Return the sorted members
+  // Filter and map members for leaderboard
+  const leaderboard = community.members
+    .filter((member) => {
+      const validMember = member._id !== null && typeof member.points === 'number';
+      if (!validMember) console.log(`Skipping member with ID: ${member._id} - Points not defined`);
+      return validMember;
+    })
+    .map((member) => {
+      const populatedMember = member._id as unknown as IUser;
+      return {
+        userId: populatedMember._id.toString(),
+        username: populatedMember.username,
+        image: populatedMember.image || '',
+        totalPoints: member.points,
+      };
+    });
+
+  console.log("Unsorted leaderboard data:", leaderboard);
+
+  // Sort by total points in descending order
+  leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+
+  console.log("Sorted leaderboard data:", leaderboard);
+  
+  return leaderboard;
+}
+
+
+
+
+
+
+/**
+ * Updates the score for a user's progress within a specific module in a community.
+ *
+ * @param communityId - The ID of the community.
+ * @param userId - The ID of the user.
+ * @param moduleId - The ID of the module within the community.
+ * @param score - The pre-calculated score to add.
+ * @returns Updated community document or null if not found.
+ */
+export async function updateModuleScore(
+  communityId: Types.ObjectId,
+  userId: Types.ObjectId,
+  moduleId: Types.ObjectId,
+  score: number
+) {
+  // Fetch the community with the necessary fields populated
+  const community = await Community.findById(communityId).select('members customization').exec();
+
+  if (!community) {
+    throw new Error('Community not found');
+  }
+
+  // Find the member within the community's members array
+  const member = community.members.find((m) => m._id.toString() === userId.toString());
+  if (!member) {
+    throw new Error('User not found in this community');
+  }
+
+  // Update general points for the member
+  member.points = (member.points || 0) + score;
+
+  // Find existing module progress for this module
+  const moduleProgress = member.moduleProgress.find(
+    (progress) => progress.moduleId.toString() === moduleId.toString()
+  );
+
+  if (moduleProgress) {
+    // Update points for the specific module within moduleProgress
+    moduleProgress.totalPoints += score;
+  } else {
+    // Add new module progress entry if it doesn't exist
+    member.moduleProgress.push({
+      moduleId,
+      totalPoints: score,
+      totalTime: 0,  // Default time; update as needed
+    });
+  }
+
+  // Save the community document with the updated score
+  await community.save();
+  return community;
 }

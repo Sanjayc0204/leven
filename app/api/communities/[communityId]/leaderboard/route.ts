@@ -25,7 +25,7 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
     // Fetch leaderboard by community ID
     const leaderboard = await getLeaderboardByCommunityId(objectId);
 
-    return new NextResponse(JSON.stringify(leaderboard), { status: 200 });
+    return new NextResponse(JSON.stringify({ success: true, data: leaderboard }), { status: 200 });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
     return new NextResponse('Error fetching leaderboard', { status: 500 });
@@ -34,35 +34,27 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
 
 
 // test
-// GET http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd/leaderboard
+// GET http://localhost:3000/api/communities/671d5e81d3e3cce1da36fc6b/leaderboard
 // output:
 /* 
-Return
-Note, if user does not exist in user db, it will appear as null
 
-[
-  {
-    "_id": null,
-    "role": "admin",
-    "points": 100,
-    "moduleProgress": []
-  },
-  {
-    "_id": {
-      "_id": "670ed82511c2c5ec6763856b",
-      "username": "andrewlee"
+
+{
+  "success": true,
+  "data": [
+    {
+      "userId": "6716cc0a3b35d6130f160c77",
+      "username": "sanjaychunduru",
+      "image": "https://lh3.googleusercontent.com/a/ACg8ocLFGS6C0C2u5rutcW4YUOP3Ifdwgazr58-GUPSX4uZEm3D2MK8K=s96-c",
+      "totalPoints": 250
     },
-    "role": "member",
-    "points": 2000,
-    "moduleProgress": []
-  },
-  {
-    "_id": null,
-    "role": "member",
-    "points": 0,
-    "moduleProgress": []
-  }
-]
+    {
+      "userId": "670ed82511c2c5ec6763856b",
+      "username": "andrewlee",
+      "image": "https://lh3.googleusercontent.com/a/ACg8ocJPBlAe6Y2-SSUTlO8JQvbZciJNIDrvxp5DulQ_V-y7hIurQMo=s96-c",
+      "totalPoints": 150
+    }
+  ]
+}
 
 */
-

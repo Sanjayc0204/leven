@@ -4,7 +4,8 @@ import { Types } from 'mongoose';
 
 /**
  * Adds a module to a community.
- *
+ * 
+ * 
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.
  * @param {string} params.communityId - The ID of the community.
@@ -59,3 +60,36 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
     return new NextResponse(JSON.stringify({ success: false, error: err.message }), { status: 500 });
   }
 }
+
+
+
+// POST http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd/module
+// Leetcode module
+
+// {
+//   "moduleId": "64ffdbcd9e73a0f2e05e48b9"
+// }
+
+// GET http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd/module
+// {
+//   "success": true,
+//   "data": [
+//     {
+//       "moduleId": {
+//         "customizations": {
+//           "pointsScheme": {
+//             "easy": 50,
+//             "medium": 100,
+//             "hard": 150
+//           }
+//         },
+//         "_id": "64ffdbcd9e73a0f2e05e48b9",
+//         "name": "Leetcode",
+//         "moduleType": "coding_platform",
+//         "createdAt": "2024-10-18T00:00:00.000Z"
+//       },
+//       "_id": "671d1e890c161dcd65d4f773"
+//     }
+//   ]
+// }
+
