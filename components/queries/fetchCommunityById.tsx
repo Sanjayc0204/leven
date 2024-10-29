@@ -13,8 +13,8 @@ const fetchCommunityById = async (searchQuery = ""): Promise<ICommunity> => {
 
 export const useCommunityById = (searchQuery = "") => {
   return useQuery<ICommunity, Error>({
-    queryKey: ["community", searchQuery], // queryKey is passed as part of the options object
-    queryFn: () => fetchCommunityById(searchQuery), // queryFn also goes inside the options object
+    queryKey: ["community", searchQuery],
+    queryFn: () => fetchCommunityById(searchQuery),
     enabled: !!searchQuery,
   });
 };

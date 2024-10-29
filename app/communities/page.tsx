@@ -7,8 +7,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCommunities } from "@/components/queries/fetchCommunities";
-import CommunityCardSkeleton from "@/components/ui/community-card-skeleton";
 import LargeCommunityCard from "@/components/ui/community-card-lg";
+import CommunityCardLargeSkeleton from "@/components/ui/community-card-lg-skeleton";
 
 export default function Communities() {
   const { isLoading, isError, data, error } = useCommunities();
@@ -17,6 +17,7 @@ export default function Communities() {
     return (
       <>
         <NavBar />
+
         <div className="flex items-center justify-center scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-4">
           <h2>Find Your People</h2>
         </div>
@@ -31,10 +32,10 @@ export default function Communities() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </div>
-        <div className="flex flex-wrap flex-grow items-center justify-center ">
-          <CommunityCardSkeleton />
-          <CommunityCardSkeleton />
-          <CommunityCardSkeleton />
+        <div className="flex flex-wrap items-center justify-center m-8 gap-8 ">
+          <CommunityCardLargeSkeleton />
+          <CommunityCardLargeSkeleton />
+          <CommunityCardLargeSkeleton />
         </div>
       </>
     );
@@ -42,7 +43,7 @@ export default function Communities() {
 
   if (data)
     return (
-      <>
+      <div className="backdrop-blur-sm bg-white/30">
         <NavBar />
         <div className="flex items-center justify-center scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-4">
           <h2>Find Your People</h2>
@@ -69,6 +70,6 @@ export default function Communities() {
             />
           ))}
         </div>
-      </>
+      </div>
     );
 }

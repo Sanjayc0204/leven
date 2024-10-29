@@ -25,6 +25,8 @@ import {
 } from "./breadcrumb";
 import Link from "next/link";
 import { LayoutDashboardIcon } from "lucide-react";
+import CommunitySidebar from "./communities-sidebar";
+import CommunityHeader from "./communities-header";
 
 // Static Menu items outside the component
 const items = [
@@ -58,7 +60,7 @@ export function AppSidebar({ communityName }: AppSidebarProps) {
   ];
 
   return (
-    <SidebarProvider>
+    <>
       <Sidebar>
         <SidebarContent>
           <SidebarGroup>
@@ -83,31 +85,6 @@ export function AppSidebar({ communityName }: AppSidebarProps) {
         </SidebarContent>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <CustomTrigger />
-          <Separator orientation="vertical" className="mr-2 ml-2 h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              {pathSegments.map((segment, index) => {
-                const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
-                return (
-                  <BreadcrumbItem key={href}>
-                    {index === pathSegments.length - 1 ? (
-                      <BreadcrumbPage>{segment}</BreadcrumbPage>
-                    ) : (
-                      <>
-                        <BreadcrumbLink href={href}>{segment}</BreadcrumbLink>
-                        <BreadcrumbSeparator />
-                      </>
-                    )}
-                  </BreadcrumbItem>
-                );
-              })}
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
