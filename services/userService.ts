@@ -10,18 +10,50 @@ import { connectToDB } from '@/util/connectToDB';
  * @returns {Promise<Array<{ _id: Types.ObjectId, name: string }>>} - An array of communities (name and ID).
  */
 export async function getUserCommunities(userId: Types.ObjectId): Promise<Array<{ _id: Types.ObjectId, name: string }>> {
-  await connectToDB();  // Ensure DB connection before any queries
+  await connectToDB();
+  
+  // Log the userId being queried
+  console.log("Fetching communities for userId:", userId);
 
   const user = await User.findById(userId).populate({
     path: 'communities',
-    select: 'name _id',  // Select only the name and _id fields of each community
+    select: 'name _id',
   }).exec();
 
+  // Log if user is not found
   if (!user) {
+    console.error("User not found with ID:", userId);
     throw new Error('User not found');
   }
 
-  // Return the populated communities with _id and name
+  console.log("User found:", user);
+  return user.communities as Array<{ _id: Types.ObjectId, name: string }>;
+}
+
+
+/**
+ * Returns all communities a user belongs to by email.
+ *
+ * @param {string} email - The email of the user.
+ * @returns {Promise<Array<{ _id: Types.ObjectId, name: string }>>} - An array of communities.
+ */
+export async function getUserCommunitiesByEmail(email: string): Promise<Array<{ _id: Types.ObjectId; name: string }>> {
+  await connectToDB();
+
+  console.log("Fetching communities for email:", email);
+
+  const user = await User.findOne({ email }).populate({
+    path: 'communities',
+    select: 'name _id',
+  }).exec();
+
+  // Log if user is not found
+  if (!user) {
+    console.error("User not found with email:", email);
+    throw new Error('User not found');
+  }
+
+  console.log("User found:", user);
   return user.communities as Array<{ _id: Types.ObjectId, name: string }>;
 }
 
