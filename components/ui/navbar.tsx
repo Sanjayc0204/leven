@@ -79,7 +79,7 @@ export default function NavBar() {
   );
 }
 
-function AvatarIcon({ img }: { img: string | null | undefined }) {
+export function AvatarIcon({ img }: { img: string | null | undefined }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
