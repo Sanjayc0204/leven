@@ -8,6 +8,7 @@ import CommunityHeader from "@/components/ui/communities-header";
 import DailyQuests from "@/components/ui/daily-quests";
 import { Icons } from "@/components/ui/icon";
 import Leaderboard from "@/components/ui/leaderboard";
+import LeaderboardAlt from "@/components/ui/leaderboard-alt";
 import LeaderboardSkeleton from "@/components/ui/leaderboard-skeleton";
 import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -57,7 +58,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
             </div>
             <div className="p-4 bg-slate-100 h-screen">
               <div className="flex">
-                {isDataReady ? <Leaderboard /> : <LeaderboardSkeleton />}
+                {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
                 <div className="pl-4">
                   <LeetcodeRubric />
                 </div>
