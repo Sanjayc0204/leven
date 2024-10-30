@@ -11,9 +11,17 @@ import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import React from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession, signIn } from "next-auth/react";
 import { Avatar } from "./avatar";
 import { AvatarFallback, AvatarImage } from "./avatar";
+import { DropdownMenuTrigger } from "./dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "./dropdown-menu";
 
 export default function NavBar() {
   const { data: session, status } = useSession();
@@ -59,13 +67,12 @@ export default function NavBar() {
         ) : status === "loading" ? (
           ""
         ) : (
-          <Link
-            href="../auth/signin"
+          <Button
             className="group inline-flex h-9 w-max items-center text-white justify-center rounded-md bg-black px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-800 hover:text-gray-100 focus:bg-gray-100 focus:text-gray-900 focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-gray-100/50 data-[state=open]:bg-gray-100/50 dark:bg-gray-950 dark:hover:bg-gray-800 dark:hover:text-gray-50 dark:focus:bg-gray-800 dark:focus:text-gray-50 dark:data-[active]:bg-gray-800/50 dark:data-[state=open]:bg-gray-800/50"
-            prefetch={false}
+            onClick={() => signIn("google")}
           >
             Log In
-          </Link>
+          </Button>
         )}
       </nav>
     </header>
@@ -74,12 +81,21 @@ export default function NavBar() {
 
 function AvatarIcon({ img }: { img: string | null | undefined }) {
   return (
-    <Link href="../auth/signin">
-      <Avatar className="w-9 h-9 rounded-full">
-        <AvatarImage src={img} className="rounded-full" />
-        <AvatarFallback>US</AvatarFallback>
-      </Avatar>
-    </Link>
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Avatar className="w-9 h-9 rounded-full">
+          <AvatarImage src={img} className="rounded-full" />
+          <AvatarFallback>US</AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <div className="p-2">
+        <DropdownMenuContent>
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
+        </DropdownMenuContent>
+      </div>
+    </DropdownMenu>
   );
 }
 

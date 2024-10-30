@@ -13,6 +13,13 @@ import { useCommunityStore } from "@/app/store/communityStore";
 import { ICommunity } from "@/models/Community.model";
 import { IUser } from "@/models/User.model";
 
+interface LeaderboardUser {
+  userId: string;
+  username: string;
+  totalPoints: number;
+  image: string;
+}
+
 const leaderboardData = [
   {
     name: "John Adamas",
@@ -92,45 +99,26 @@ function LeaderboardCard() {
   const { isLoading, isError, data, error } = useLeaderboard(
     communityData?._id as string
   );
-  if (isLoading) {
-    console.log("lda ");
-  }
   if (isError) {
     console.log("err ", error);
   }
   if (data) {
-    const filteredData = Array.isArray(data)
-      ? data.filter((record) => record._id !== null)
-      : [];
-    console.log("yahoo!", filteredData);
+    console.log("Mid moments", data.data);
   }
-
-  // const { isLoading, isError, data, error } = useLeaderboard(communityData?._id);
-  // const { isLoading, isError, data, error } = useLeaderboard(
-  //   communityData?._id as string
-  // );
-  // if (data) {
-  //   console.log("woohoo");
-  // }
-  // if (isError) {
-  //   console.log(error);
-  // }
-  // if (isLoading) {
-  //   console.log("loading");
-  // }
   console.log("monke ", communityData);
-  // if (isLoading) {
-  //   return <LeaderboardSkeleton />;
-  // }
-  // if (isError) {
-  //   return (
-  //     <Card className="w-[500px] h-[400px]">
-  //       <CardHeader>Error!</CardHeader>
-  //       <CardDescription>{error.message}</CardDescription>
-  //     </Card>
-  //   );
-  // }
-  if (1) {
+  if (isLoading) {
+    return <LeaderboardSkeleton />;
+  }
+  if (isError) {
+    return (
+      <Card className="w-[500px] h-[400px]">
+        <CardHeader>Error!</CardHeader>
+        <CardDescription>{error.message}</CardDescription>
+      </Card>
+    );
+  }
+  if (data) {
+    const leaderboardArray: LeaderboardUser[] = data.data;
     return (
       <Card className="w-[500px] h-[400px]">
         <div className="">
@@ -143,14 +131,14 @@ function LeaderboardCard() {
         </div>
         <CardContent className="overflow-y-auto h-64">
           <div>
-            {leaderboardData.map((user, index) => {
+            {leaderboardArray.map((user: LeaderboardUser, index: number) => {
               return (
                 <LeaderboardCardDiv
-                  key={index}
+                  key={user.userId}
                   index={index + 1}
-                  name={user.name}
-                  points={user.points}
-                  img={user.img}
+                  name={user.username}
+                  points={user.totalPoints}
+                  img={user.image}
                 />
               );
             })}
