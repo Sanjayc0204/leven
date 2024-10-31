@@ -91,3 +91,14 @@ export async function getUserProfile(userId: Types.ObjectId): Promise<IUser> {
 
   return user;
 }
+
+/**
+ * Retrieves a user's profile by email.
+ *
+ * @param {string} email - The email of the user.
+ * @returns {Promise<IUser | null>} - The user's profile, or null if not found.
+ */
+export async function getUserProfileByEmail(email: string): Promise<IUser | null> {
+  const user = await User.findOne({ email }).select('-password').exec();
+  return user;
+}
