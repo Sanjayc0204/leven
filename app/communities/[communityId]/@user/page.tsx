@@ -50,7 +50,12 @@ export default function CommunityPage({ params }: CommunityPageProps) {
   if (data) {
     return (
       <>
-        <SidebarProvider>
+        <SidebarProvider
+          style={{
+            "--sidebar-width": "14rem",
+            "--sidebar-width-mobile": "20rem",
+          }}
+        >
           <AppSidebar communityName={data.name} />
           <SidebarInset>
             <div className="sticky top-0 bg-white">

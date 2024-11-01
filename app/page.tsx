@@ -12,7 +12,7 @@ export default function Home() {
         <div className="text-center">
           {/* Center the text and button */}
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-0">
-            Condyte
+            Leven
           </h1>
           <h2 className="text-muted-foreground p-1">Get better, together</h2>
           <Link href="/communities" passHref>
