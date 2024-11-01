@@ -5,6 +5,7 @@ import AuthProvider from "@/components/providers/session-provider";
 import QueryClientProvider from "@/components/providers/query-client-provider";
 import { ClientSidebarWrapper } from "@/components/clients/sidebar-client";
 import NextTopLoader from "nextjs-toploader";
+import OnAuth from "@/components/etc/onAuth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,6 +37,7 @@ export default function RootLayout({
           <QueryClientProvider>
             <ClientSidebarWrapper>
               <NextTopLoader color="black" showSpinner={false} />
+              <OnAuth />
               {children}
             </ClientSidebarWrapper>
           </QueryClientProvider>
