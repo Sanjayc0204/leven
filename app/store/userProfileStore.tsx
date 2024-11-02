@@ -3,9 +3,9 @@ import { create } from "zustand";
 
 export const useUserProfileStore = create<{
   userProfile: IUser | null;
-  setUserProfile: (data: IUser) => void;
-  userCommunities: Array<{ _id: string; name: string }> | null;
-  setUserCommunities: (data: Array<{ _id: string; name: string }>) => void;
+  setUserProfile: (data: IUser | null) => void;
+  userCommunities: Array<string> | null;
+  setUserCommunities: (data: Array<string> | null) => void;
 }>((set) => ({
   userProfile: null,
   setUserProfile: (data) => set({ userProfile: data }),

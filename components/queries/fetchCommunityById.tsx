@@ -11,9 +11,10 @@ const fetchCommunityById = async (searchQuery = ""): Promise<ICommunity> => {
   return res.json();
 };
 
-export const useCommunityById = (searchQuery = "") => {
+export const useCommunityById = (searchQuery = "", trigger: number) => {
+  console.log("trigger", trigger);
   return useQuery<ICommunity, Error>({
-    queryKey: ["community", searchQuery],
+    queryKey: ["community", searchQuery, trigger],
     queryFn: () => fetchCommunityById(searchQuery),
     enabled: !!searchQuery,
   });

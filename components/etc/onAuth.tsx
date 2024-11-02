@@ -16,9 +16,12 @@ export default function OnAuth() {
 
   useEffect(() => {
     if (data) {
-      console.log("yayay", data);
-      setUserProfile(data);
+      console.log("yayay");
+      setUserProfile(data.data);
       setUserCommunities(data.data.communities);
+    } else {
+      setUserProfile(null);
+      setUserCommunities(null);
     }
   }, [data, setUserCommunities, setUserProfile]);
 

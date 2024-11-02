@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 const fetchUserProfile = async (searchQuery: string) => {
-  const res = await fetch(`api/users/${searchQuery}/profile`);
+  const res = await fetch(`/api/users/${searchQuery}/profile`);
   if (!res.ok) {
     throw new Error("Failed to fetch userProfile");
   }
