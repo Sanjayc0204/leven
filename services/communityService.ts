@@ -554,56 +554,45 @@ export async function getLeaderboardByCommunityId(
 
 
 
+import { findUserByIdOrEmail } from '@/util/userUtils/getUserIdFromIdentifier';
 
 /**
  * Updates the score for a user's progress within a specific module in a community.
  *
  * @param communityId - The ID of the community.
- * @param userId - The ID of the user.
+ * @param userIdentifier - The ID or email of the user.
  * @param moduleId - The ID of the module within the community.
  * @param score - The pre-calculated score to add.
  * @returns Updated community document or null if not found.
  */
 export async function updateModuleScore(
   communityId: Types.ObjectId,
-  userId: Types.ObjectId,
+  userIdentifier: string | Types.ObjectId,
   moduleId: Types.ObjectId,
   score: number
 ) {
   // Fetch the community with the necessary fields populated
   const community = await Community.findById(communityId).select('members customization').exec();
+  if (!community) throw new Error('Community not found');
 
-  if (!community) {
-    throw new Error('Community not found');
-  }
+  // Get user details
+  const user = await findUserByIdOrEmail(userIdentifier);
+  if (!user) throw new Error('User not found');
+  
+  const member = community.members.find((m) => m._id.equals(user._id));
+  if (!member) throw new Error('User not a member of this community');
 
-  // Find the member within the community's members array
-  const member = community.members.find((m) => m._id.toString() === userId.toString());
-  if (!member) {
-    throw new Error('User not found in this community');
-  }
-
-  // Update general points for the member
+  // Update general points
   member.points = (member.points || 0) + score;
 
-  // Find existing module progress for this module
-  const moduleProgress = member.moduleProgress.find(
-    (progress) => progress.moduleId.toString() === moduleId.toString()
-  );
-
+  // Update or add points for module progress
+  const moduleProgress = member.moduleProgress.find((prog) => prog.moduleId.equals(moduleId));
   if (moduleProgress) {
-    // Update points for the specific module within moduleProgress
     moduleProgress.totalPoints += score;
   } else {
-    // Add new module progress entry if it doesn't exist
-    member.moduleProgress.push({
-      moduleId,
-      totalPoints: score,
-      totalTime: 0,  // Default time; update as needed
-    });
+    member.moduleProgress.push({ moduleId, totalPoints: score, totalTime: 0 });
   }
 
-  // Save the community document with the updated score
   await community.save();
   return community;
 }
