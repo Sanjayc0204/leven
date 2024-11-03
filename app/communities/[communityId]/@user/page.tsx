@@ -1,13 +1,14 @@
 "use client";
 
 import { useCommunityStore } from "@/app/store/communityStore";
+// import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
-import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
+// import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import CommunityHeader from "@/components/ui/communities-header";
-import DailyQuests from "@/components/ui/daily-quests";
+// import DailyQuests from "@/components/ui/daily-quests";
 import { Icons } from "@/components/ui/icon";
-import Leaderboard from "@/components/ui/leaderboard";
+// import Leaderboard from "@/components/ui/leaderboard";
 import LeaderboardAlt from "@/components/ui/leaderboard-alt";
 import LeaderboardSkeleton from "@/components/ui/leaderboard-skeleton";
 import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
@@ -20,9 +21,13 @@ interface CommunityPageProps {
 
 export default function CommunityPage({ params }: CommunityPageProps) {
   const { communityId } = params;
-  const { isLoading, isError, data, error } = useCommunityById(communityId);
   const setCommunity = useCommunityStore((state) => state.setCommunityData);
   const [isDataReady, setDataReady] = useState(false);
+  const [trigger, setTrigger] = useState(0);
+  const { isLoading, isError, data, error } = useCommunityById(
+    communityId,
+    trigger
+  );
 
   useEffect(() => {
     if (data) {
@@ -50,11 +55,20 @@ export default function CommunityPage({ params }: CommunityPageProps) {
   if (data) {
     return (
       <>
-        <SidebarProvider>
-          <AppSidebar communityName={data.name} />
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "14rem",
+              "--sidebar-width-mobile": "20rem",
+            } as React.CSSProperties
+          }
+        >
+          <AppSidebar communityName={trigger ? data.name : "hooligan"} />
           <SidebarInset>
             <div className="sticky top-0 bg-white">
-              <CommunityHeader />
+              <CommunityHeader
+                onDataFetch={() => setTrigger((prev) => prev + 1)}
+              />
             </div>
             <div className="p-4 bg-slate-100 h-screen">
               <div className="flex">
