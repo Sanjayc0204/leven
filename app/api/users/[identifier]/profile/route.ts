@@ -34,31 +34,51 @@ export async function GET(req: NextRequest, { params }: { params: {identifier: s
 }
 
 /**
- * Updates a user's profile settings (PUT).
+ * Updates a user's profile settings (PUT). 
+ * !!!!!!! ONLY USER ID, NOT EMAIL
  *
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.
- * @param {string} params.userId - The ID of the user.
+ * @param {string} params.id - The ID of the user.
  * @returns {Promise<NextResponse>} - The response object containing the updated user profile.
  */
-export async function PUT(req: NextRequest, { params }: { params: { userId: string } }): Promise<NextResponse> {
+export async function PUT(req: NextRequest, { params }: { params: { identifier: string } }): Promise<NextResponse> {
   await connectToDB();
 
-  const { userId } = params;
+  const { identifier } = params;
   const updateData = await req.json();  // Parse incoming complete user profile data
 
-  // Validate userId as a valid ObjectId
-  if (!Types.ObjectId.isValid(userId)) {
-    return new NextResponse('Invalid user ID', { status: 400 });
+  // Debug: Check the value and type of userId
+  console.log("Received userId:", identifier, "Type:", typeof identifier);
+
+  if (!identifier) {
+    return new NextResponse(JSON.stringify({ success: false, error: 'User ID is required' }), { status: 400 });
+  }
+
+  if (!Types.ObjectId.isValid(identifier)) {
+    return new NextResponse(JSON.stringify({ success: false, error: 'Invalid user ID format' }), { status: 400 });
+  }
+
+  // Remove `email` if it exists in `updateData` to prevent updates to email field
+  if ('email' in updateData) {
+    delete updateData.email;
   }
 
   try {
-    // Update the entire user profile (or fields allowed to update)
-    const updatedUser = await updateUserProfile(new Types.ObjectId(userId), updateData);
+    const updatedUser = await updateUserProfile(new Types.ObjectId(identifier), updateData);
+
+    if (!updatedUser) {
+      return new NextResponse(JSON.stringify({ success: false, error: 'User not found' }), { status: 404 });
+    }
 
     return new NextResponse(JSON.stringify({ success: true, data: updatedUser }), { status: 200 });
   } catch (error) {
-    const err = error as Error;
-    return new NextResponse(JSON.stringify({ success: false, error: err.message }), { status: 500 });
+    console.error('Error in PUT request:', error);
+    return new NextResponse(JSON.stringify({ success: false, error: (error as Error).message }), { status: 500 });
   }
 }
+
+
+
+// GET http://localhost:3000/api/users/6714178e6da7ab267f83bebe/profile
+// PUT 
