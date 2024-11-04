@@ -39,6 +39,7 @@ export default function CommunityHeader({
   const setUserCommunities = useUserProfileStore(
     (state) => state.setUserCommunities
   );
+  console.log("User Communities: ", userCommunities);
 
   async function handleLeave() {
     setIsLoading(true);
