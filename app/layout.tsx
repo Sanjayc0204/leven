@@ -6,6 +6,8 @@ import QueryClientProvider from "@/components/providers/query-client-provider";
 import { ClientSidebarWrapper } from "@/components/clients/sidebar-client";
 import NextTopLoader from "nextjs-toploader";
 import OnAuth from "@/components/etc/onAuth";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,11 +37,14 @@ export default function RootLayout({
       >
         <AuthProvider>
           <QueryClientProvider>
-            <ClientSidebarWrapper>
-              <NextTopLoader color="black" showSpinner={false} />
-              <OnAuth />
-              {children}
-            </ClientSidebarWrapper>
+            <ThemeProvider>
+              <ClientSidebarWrapper>
+                <NextTopLoader color="black" showSpinner={false} />
+                <OnAuth />
+                {children}
+                <Toaster />
+              </ClientSidebarWrapper>
+            </ThemeProvider>
           </QueryClientProvider>
         </AuthProvider>
       </body>

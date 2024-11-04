@@ -1,7 +1,10 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarNav } from "./components/nav-bar";
 
-const sidebarNavItems = [{ title: "preferences", href: "#" }];
+const sidebarNavItems = [
+  { title: "Profile", href: "/user/settings" },
+  { title: "Preferences", href: "/user/settings/preferences" },
+];
 
 interface settingsLayoutProps {
   children: React.ReactNode;
