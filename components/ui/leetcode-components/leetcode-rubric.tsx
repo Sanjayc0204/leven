@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge";
 
 export default function LeetcodeRubric() {
   const rubricData = [
-    { difficulty: "Easy", points: 1, color: "bg-green-500" },
-    { difficulty: "Medium", points: 3, color: "bg-yellow-500" },
-    { difficulty: "Hard", points: 5, color: "bg-red-500" },
+    { difficulty: "Easy", points: 5, color: "bg-green-500" },
+    { difficulty: "Medium", points: 10, color: "bg-yellow-500" },
+    { difficulty: "Hard", points: 15, color: "bg-red-500" },
   ];
 
   return (
