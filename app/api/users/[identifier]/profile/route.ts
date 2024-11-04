@@ -81,4 +81,18 @@ export async function PUT(req: NextRequest, { params }: { params: { identifier: 
 
 
 // GET http://localhost:3000/api/users/6714178e6da7ab267f83bebe/profile
-// PUT 
+// PUT
+
+/* 
+ 
+ {
+  "username": "newUsername",
+  "email": "newEmail@example.com",
+  "image": "https://example.com/new-image.jpg",
+  "settings": {
+    "theme": "dark",
+    "notifications": false
+  }
+}
+ 
+ */
