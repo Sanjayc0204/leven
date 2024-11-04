@@ -6,24 +6,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Types } from 'mongoose';
 
 /**
- * Get details about a community by its ID.
+ * Get details about a community by its ID or slug
+ * 11/4/2024
  *
  * @param {NextRequest} req - The incoming request object.
  * @param {Object} params - The request parameters.
- * @param {string} params.communityId - The ID of the community.
+ * @param {string} params.communityId - The ID or slug of the community.
  * @returns {Promise<NextResponse>} - The response object containing the community details.
  */
 export async function GET(req: NextRequest, { params }: { params: { communityId: string } }): Promise<NextResponse> {
   try {
     const { communityId } = params;
 
-    // Validate communityId as ObjectId
-    if (!Types.ObjectId.isValid(communityId)) {
-      return new NextResponse('Invalid community ID', { status: 400 });
-    }
-
-    // Fetch the community by ID
-    const community = await getCommunityById(new Types.ObjectId(communityId));
+    // Fetch the community by ID or slug
+    const community = await getCommunityById(communityId);
 
     if (!community) {
       return new NextResponse('Community not found', { status: 404 });
