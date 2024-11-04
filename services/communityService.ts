@@ -1,11 +1,10 @@
 import { Types } from "mongoose";
 import User from "@/models/User.model";
-import Community, {
-  ICommunity,
-  ICommunityModule,
-} from "@/models/Community.model";
+import Community, {ICommunity,ICommunityModule} from "@/models/Community.model";
 import Module, { IModule } from "@/models/Module.model";
 import { connectToDB } from "@/util/connectToDB";
+import { generateSlug } from "@/util/communityUtils/generateSlug";
+import { findCommunityIdOrSlug } from "@/util/communityUtils/findCommunityIdOrSlug";
 
 // Interface for what a community member should look like
 interface IMember {
@@ -61,9 +60,11 @@ export async function createCommunity(
   image: string
 ): Promise<ICommunity> {
   await connectToDB();
+  const slug = generateSlug(name);
 
   const community = new Community({
     name,
+    slug,
     description,
     image,
     creator_ID: creatorId,
@@ -84,18 +85,22 @@ export async function createCommunity(
   return community;
 }
 
+
+
 /**
  * Fetch community details by ID.
  *
- * @param {Types.ObjectId} communityId - Community ID.
+ * @param {Types.String} identifier 
  * @returns {Promise<ICommunity | null>} - The found community or null if not found.
  */
 export async function getCommunityById(
-  communityId: Types.ObjectId
+  identifier: string | Types.ObjectId
 ): Promise<ICommunity | null> {
   await connectToDB();
-  return Community.findById(communityId);
+  return findCommunityIdOrSlug(identifier);
 }
+
+
 
 /**
  * Updates general community's data (image, name, description) + (future visibility settings, notifications, etc).
