@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useUserProfile } from "../queries/fetchUserProfile";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
 
@@ -12,11 +12,14 @@ export default function OnAuth() {
     (state) => state.setUserCommunities
   );
 
-  const { data, refetch } = useUserProfile(`${session?.user?.email}` || "");
+  // Memoize the email to avoid unnecessary re-renders
+  const userEmail = useMemo(() => session?.user?.email, [session?.user?.email]);
+
+  // Fetch profile data only if email is present and user is authenticated
+  const { data, refetch } = useUserProfile(userEmail || "");
 
   useEffect(() => {
     if (data) {
-      console.log("yayay");
       setUserProfile(data.data);
       setUserCommunities(data.data.communities);
     } else {
@@ -26,10 +29,12 @@ export default function OnAuth() {
   }, [data, setUserCommunities, setUserProfile]);
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.email) {
+    // Only refetch if authenticated and userEmail is present and data is not loaded
+    if (status === "authenticated" && userEmail && !data) {
+      console.log("refetching");
       refetch();
     }
-  }, [status, refetch, session?.user?.email]);
+  }, [status, refetch, userEmail, data]);
 
   return null;
 }

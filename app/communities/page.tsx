@@ -59,16 +59,18 @@ export default function Communities() {
             </DropdownMenuTrigger>
           </DropdownMenu>
         </div>
-        <div className="flex flex-wrap items-center justify-center m-8 gap-8 ">
-          {data.map((community) => (
-            <LargeCommunityCard
-              imgUrl={community.image}
-              communityName={community.name}
-              communityDescription={community.description}
-              _id={community._id as string}
-              key={community._id as string}
-            />
-          ))}
+        <div className="flex items-center justify-center">
+          <div className="flex flex-wrap items-center justify-center m-8 gap-8 max-w-[1000px] ">
+            {data.map((community) => (
+              <LargeCommunityCard
+                imgUrl={community.image}
+                communityName={community.name}
+                communityDescription={community.description}
+                _id={community._id as string}
+                key={community._id as string}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );

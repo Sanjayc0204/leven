@@ -63,7 +63,7 @@ export default function CommunityPage({ params }: CommunityPageProps) {
             } as React.CSSProperties
           }
         >
-          <AppSidebar communityName={trigger ? data.name : "hooligan"} />
+          <AppSidebar communityName={data.name} />
           <SidebarInset>
             <div className="sticky top-0 bg-white">
               <CommunityHeader
