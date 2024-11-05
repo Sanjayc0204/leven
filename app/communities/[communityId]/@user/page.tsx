@@ -6,6 +6,7 @@ import { useCommunityById } from "@/components/queries/fetchCommunityById";
 // import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import CommunityHeader from "@/components/ui/communities-header";
+import DailyQuests from "@/components/ui/daily-quests";
 // import DailyQuests from "@/components/ui/daily-quests";
 import { Icons } from "@/components/ui/icon";
 // import Leaderboard from "@/components/ui/leaderboard";
@@ -74,7 +75,8 @@ export default function CommunityPage({ params }: CommunityPageProps) {
               <div className="flex">
                 {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
                 <div className="pl-4">
-                  <LeetcodeRubric />
+                  {/* <LeetcodeRubric /> */}
+                  <DailyQuests/>
                 </div>
               </div>
             </div>

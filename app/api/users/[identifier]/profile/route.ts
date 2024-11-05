@@ -35,7 +35,8 @@ export async function GET(req: NextRequest, { params }: { params: {identifier: s
 
 /**
  * Updates a user's profile settings (PUT). 
- * !!!!!!! ONLY USER ID, NOT EMAIL
+ * !!!!!!! ONLY ACCPETS USER ID, NOT EMAIL
+ * Also validates username, exclude permissions to change email
  *
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.
@@ -48,15 +49,27 @@ export async function PUT(req: NextRequest, { params }: { params: { identifier: 
   const { identifier } = params;
   const updateData = await req.json();  // Parse incoming complete user profile data
 
-  // Debug: Check the value and type of userId
-  console.log("Received userId:", identifier, "Type:", typeof identifier);
-
   if (!identifier) {
     return new NextResponse(JSON.stringify({ success: false, error: 'User ID is required' }), { status: 400 });
   }
 
   if (!Types.ObjectId.isValid(identifier)) {
     return new NextResponse(JSON.stringify({ success: false, error: 'Invalid user ID format' }), { status: 400 });
+  }
+
+  // Validate data 
+  if (typeof updateData.username === 'string') {
+    // Ensure the username is between 8 and 20 characters and only contains alphanumeric characters
+    if (
+      updateData.username.length < 8 || 
+      updateData.username.length > 20 || 
+      !/^[a-zA-Z0-9]+$/.test(updateData.username)
+    ) {
+      return new NextResponse(JSON.stringify({ 
+        success: false, 
+        error: 'Username must be 8-20 alphanumeric characters' 
+      }), { status: 400 });
+    }
   }
 
   // Remove `email` if it exists in `updateData` to prevent updates to email field
@@ -86,7 +99,7 @@ export async function PUT(req: NextRequest, { params }: { params: { identifier: 
 /* 
  
  {
-  "username": "newUsername",
+  "username": "newUsernamedddddddddddddddddd",
   "email": "newEmail@example.com",
   "image": "https://example.com/new-image.jpg",
   "settings": {
