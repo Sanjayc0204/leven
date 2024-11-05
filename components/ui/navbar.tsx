@@ -3,14 +3,13 @@
  * @see https://v0.dev/t/lJwnQlHSEBA
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
+
 "use client";
 
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { signOut, useSession, signIn } from "next-auth/react";
 import { Avatar } from "./avatar";
 import { AvatarFallback, AvatarImage } from "./avatar";
@@ -22,6 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "./dropdown-menu";
+import { usePathname } from "next/navigation";
+import { usePathStore } from "@/app/store/pathStore";
 
 export default function NavBar() {
   const { data: session, status } = useSession();
@@ -80,11 +81,16 @@ export default function NavBar() {
 }
 
 export function AvatarIcon({ img }: { img: string | null | undefined }) {
+  const pathname = usePathname();
+  const setPath = usePathStore((state) => state.setPathData);
+  useEffect(() => {
+    setPath(pathname);
+  }, [pathname, setPath]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar className="w-9 h-9 rounded-full">
-          <AvatarImage src={img} className="rounded-full" />
+          <AvatarImage src={img || ""} className="rounded-full" />
           <AvatarFallback>US</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -93,6 +99,9 @@ export function AvatarIcon({ img }: { img: string | null | undefined }) {
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
+          <Link href="/user/settings">
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+          </Link>
         </DropdownMenuContent>
       </div>
     </DropdownMenu>

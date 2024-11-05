@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarNav } from "./components/nav-bar";
+import ExitSettings from "./components/exit-settings";
 
 const sidebarNavItems = [
   { title: "Profile", href: "/user/settings" },
@@ -14,6 +15,10 @@ export default function SettingsLayout({ children }: settingsLayoutProps) {
   return (
     <div className="hidden space-y-6 p-10 pb-16 md:block">
       <div className="space-y-0.5">
+        {/* Use justify-end and items-center here */}
+        <div className="flex justify-end items-center">
+          <ExitSettings />
+        </div>
         <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
         <p className="text-muted-foreground">
           Manage your account settings and set e-mail preferences.
