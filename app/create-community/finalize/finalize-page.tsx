@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useStepStore } from "../store/createCommunityStepStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,33 +8,54 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { useEffect } from "react";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
-// Map module names to specific image URLs
 const moduleImageMap: { [key: string]: string } = {
   Leetcode: "https://leetcode.com/static/images/LeetCode_Sharing.png",
-  // Add other modules here as needed
 };
 
 export default function FinalizeSelections() {
+  const [isLoading, setIsLoading] = useState(false);
   const formData = useStepStore((state) => state.formData);
   const selectedModules = useStepStore((state) => state.selectedModules);
   const setStepData = useStepStore((state) => state.setStepData);
   const userProfile = useUserProfileStore((state) => state.userProfile);
   const modulesIdArray = selectedModules.map((item) => item._id);
+  const router = useRouter();
 
   const communityData = {
     ...formData,
-    creator_ID: userProfile?._id || "",
+    creatorId: userProfile?._id || "",
     modules: modulesIdArray,
   };
 
-  console.log("Form data", communityData);
-
   useEffect(() => {
     setStepData(3);
-  }, [setStepData]); // Add dependencies to ensure this runs only once when the component mounts
+  }, [setStepData]);
+
+  async function handleClick() {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/communities/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(communityData),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        router.replace(`/communities/${data.data._id}`);
+      } else {
+        console.error("Error creating community:", res.statusText);
+      }
+    } catch (error) {
+      console.error("Error creating community:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -71,7 +93,7 @@ export default function FinalizeSelections() {
                 <Card key={module._id} className="p-4 flex items-center">
                   <div className="w-12 h-12 flex-shrink-0">
                     <Image
-                      src={moduleImageMap[module.name] || "/default-image.png"} // Use the mapped image or a default
+                      src={moduleImageMap[module.name] || "/default-image.png"}
                       alt={module.name}
                       width={48}
                       height={48}
@@ -98,7 +120,10 @@ export default function FinalizeSelections() {
         <Link href="/create-community/modules">
           <Button variant="outline">Back</Button>
         </Link>
-        <Button>Confirm and Create Community</Button>
+        <Button onClick={handleClick} disabled={isLoading} className="relative">
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoading ? "Creating..." : "Confirm and Create Community"}
+        </Button>
       </div>
     </div>
   );
