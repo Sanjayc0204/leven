@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,7 +21,7 @@ import { toast } from "@/hooks/use-toast";
 const profileFormSchema = z.object({
   username: z
     .string()
-    .min(5, { message: "Username must be at least 5 characters long" })
+    .min(5, { message: "Username must be at least 8 characters long" })
     .max(30, { message: "Username cannot be longer than 30 characters" }),
 });
 
@@ -36,25 +37,37 @@ export function ProfileForm() {
   });
 
   async function onSubmit(data: ProfileFormValues) {
-    const updatedUserProfile = { ...userProfile };
-    console.log(JSON.stringify(updatedUserProfile));
+    try {
+      const updatedUserProfile = { ...userProfile };
 
-    (Object.keys(data) as Array<keyof ProfileFormValues>).forEach((key) => {
-      if (key in updatedUserProfile) {
-        updatedUserProfile[key] = data[key];
+      (Object.keys(data) as Array<keyof ProfileFormValues>).forEach((key) => {
+        if (key in updatedUserProfile) {
+          updatedUserProfile[key] = data[key];
+        }
+      });
+
+      const res = await fetch(`/api/users/${userProfile?._id}/profile`, {
+        method: "PUT",
+        body: JSON.stringify(updatedUserProfile),
+      });
+
+      if (res.ok) {
+        console.log("Updated user profile!");
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated.",
+          variant: "default",
+        });
+      } else {
+        throw new Error(res.statusText);
       }
-    });
-
-    const res = await fetch(`/api/users/${userProfile?._id}/profile`, {
-      method: "PUT",
-      body: JSON.stringify(updatedUserProfile),
-    });
-
-    if (res.ok) {
-      const result = await res.json();
-      console.log("Profile updated:", result.data);
-    } else {
-      console.error("Failed to update profile:", res.statusText);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -83,7 +96,7 @@ export function ProfileForm() {
             </FormItem>
           )}
         />
-        <Button>Update Profile</Button>
+        <Button type="submit">Update Profile</Button>
       </form>
     </Form>
   );

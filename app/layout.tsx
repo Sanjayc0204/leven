@@ -41,8 +41,8 @@ export default function RootLayout({
               <ClientSidebarWrapper>
                 <NextTopLoader color="black" showSpinner={false} />
                 <OnAuth />
-                {children}
                 <Toaster />
+                {children}
               </ClientSidebarWrapper>
             </ThemeProvider>
           </QueryClientProvider>

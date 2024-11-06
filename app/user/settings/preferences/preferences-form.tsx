@@ -17,21 +17,41 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const preferencesFormSchema = z.object({
+  notifications: z.boolean(),
+  theme: z.string(),
+});
+
+type PreferencesFormValues = z.infer<typeof preferencesFormSchema>;
 
 export default function PreferencesForm() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const userProfile = useUserProfileStore((state) => state.userProfile);
-  setTheme(userProfile?.settings.theme as string);
 
-  const form = useForm({
+  console.log("Theme", theme);
+
+  const form = useForm<PreferencesFormValues>({
+    resolver: zodResolver(preferencesFormSchema),
     defaultValues: {
-      displayColor: "system",
-      emailNotifications: false,
+      theme: userProfile?.settings.theme,
+      notifications: userProfile?.settings.notifications,
     },
+    mode: "onChange",
   });
 
-  // useEffect to avoid hydration mismatch
+  useEffect(() => {
+    if (userProfile?.settings) {
+      form.reset({
+        theme: userProfile.settings.theme,
+        notifications: userProfile.settings.notifications,
+      });
+    }
+  }, [userProfile, form]);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -40,21 +60,44 @@ export default function PreferencesForm() {
     return null;
   }
 
-  const onSubmit = (data) => {
-    // Here you would typically save the preferences to your backend
-    console.log(data);
-    toast({
-      title: "Preferences saved",
-      description: "Your preferences have been successfully updated.",
-    });
-  };
+  async function onSubmit(data: PreferencesFormValues) {
+    try {
+      const updatedUserProfile = {
+        ...userProfile,
+        settings: { ...userProfile?.settings, ...data },
+      };
+
+      const res = await fetch(`/api/users/${userProfile?._id}/profile`, {
+        method: "PUT",
+        body: JSON.stringify(updatedUserProfile),
+      });
+
+      if (res.ok) {
+        console.log("Updated user preferences!");
+        toast({
+          title: "Preferences updated",
+          description: "Your prefernces has been successfully updated.",
+          variant: "default",
+        });
+      } else {
+        throw new Error(res.statusText);
+      }
+
+      toast({
+        title: "Preferences saved",
+        description: "Your preferences have been successfully updated.",
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="displayColor"
+          name="theme"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Display Preference</FormLabel>
@@ -161,7 +204,7 @@ export default function PreferencesForm() {
         />
         <FormField
           control={form.control}
-          name="emailNotifications"
+          name="notifications"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
