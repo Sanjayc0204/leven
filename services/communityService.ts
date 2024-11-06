@@ -64,7 +64,7 @@ export async function createCommunity(
   await connectToDB();
   const slug = generateSlug(name);
 
-  // Create the community document with basic fields
+  // Step 1: Create the community document with basic fields
   const community = new Community({
     name,
     slug,
@@ -87,16 +87,23 @@ export async function createCommunity(
   // Save the community to get the _id
   await community.save();
 
-  // Step 1: Add each module to the community using addModuleToCommunity
+  // Step 2: Add each module to the community using addModuleToCommunity
   for (const moduleId of modules) {
     await addModuleToCommunity(
-      community._id as Types.ObjectId, // Explicitly cast community._id to ObjectId
-      moduleId as Types.ObjectId, // Explicitly cast moduleId to ObjectId
+      community._id as Types.ObjectId,
+      moduleId as Types.ObjectId,
       creatorId
     );
   }
 
-  // Step 2: Retrieve the updated community with modules and customizations populated
+  // Step 3: Append the community ID to the creator's communities array
+  await User.findByIdAndUpdate(
+    creatorId,
+    { $push: { communities: community._id } }, // Append the new community's ID to the user's communities array
+    { new: true }
+  );
+
+  // Step 4: Retrieve the updated community with modules and customizations populated
   const updatedCommunity = await Community.findById(community._id);
 
   return updatedCommunity!;
