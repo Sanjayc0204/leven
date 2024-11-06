@@ -1,10 +1,21 @@
 import mongoose, { Document, Schema, Model, Types } from "mongoose";
+import Task from "./Task.model";
 
 // Define interfaces for subdocuments
 interface IModuleProgress {
   moduleId: mongoose.Types.ObjectId;
   totalPoints: number;
   totalTime: number;
+}
+
+export interface PointsScheme {
+  [difficulty: string]: number;
+}
+
+export interface UpdateData {
+  customizations?: {
+      pointsScheme?: PointsScheme;
+  };
 }
 
 interface IMember {
@@ -19,9 +30,14 @@ interface ICustomization {
   pointsScheme: object;
 }
 
+// Array of modules in community
 export interface ICommunityModule {
   moduleId: mongoose.Types.ObjectId;
+  moduleName: string;
   settings: object;
+  customizations: {
+    pointsScheme: PointsScheme;
+};
 }
 
 // Define the main Community interface
@@ -41,7 +57,7 @@ export interface ICommunity extends Document {
 // Define the schema with optimized fields
 const CommunitySchema: Schema = new mongoose.Schema({
   name: { type: String, required: true },
-  slug: { type: String, unique: true},
+  slug: { type: String, unique: true },
   description: { type: String, default: "" },
   image: { type: String, default: "" },
   creator_ID: {
@@ -49,7 +65,7 @@ const CommunitySchema: Schema = new mongoose.Schema({
     ref: "User",
     required: true,
     index: true,
-  }, // Indexed for faster lookups
+  },
   members: [
     {
       _id: {
@@ -57,7 +73,7 @@ const CommunitySchema: Schema = new mongoose.Schema({
         ref: "User",
         required: true,
         index: true,
-      }, // Indexed for querying by member
+      },
       role: { type: String, enum: ["admin", "member"], default: "member" },
       points: { type: Number, default: 0 },
       moduleProgress: [
@@ -85,16 +101,22 @@ const CommunitySchema: Schema = new mongoose.Schema({
   ],
   modules: [
     {
-      moduleId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Module",
-        required: true,
-      },
-      settings: { type: Object, default: {} },
+      moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
+      moduleName: { type: String, required: true },  // Store the name of each module here
+      settings: { type: Object, default: {} },       // Default settings specific to each module
+      customizations: { type: Object, default: {} }  // Store module's points scheme or custom configurations
     },
   ],
   settings: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now },
+});
+
+// Post-delete hook to remove tasks associated with a community
+CommunitySchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    await Task.deleteMany({ communityId: doc._id });
+    console.log(`Deleted all tasks associated with community ${doc._id}`);
+  }
 });
 
 // Export model with the interface

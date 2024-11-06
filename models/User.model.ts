@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema, Model, Types } from "mongoose";
 import { ICommunity } from "@/models/Community.model"; // Assuming you have this interface
 import Community from "@/models/Community.model"; // Ensure correct path
+import Task from "./Task.model";
 
 // Define an interface for the User document
 export interface IUser extends Document {
@@ -44,6 +45,14 @@ const UserSchema: Schema = new mongoose.Schema({
   },
   last_login_date: { type: Date, default: Date.now },
   created_date: { type: Date, default: Date.now },
+});
+
+// Post-delete hook to remove tasks associated with a user
+UserSchema.post('findOneAndDelete', async function (doc) {
+  if (doc) {
+    await Task.deleteMany({ userId: doc._id });
+    console.log(`Deleted all tasks associated with user ${doc._id}`);
+  }
 });
 
 // Export the model with the interface

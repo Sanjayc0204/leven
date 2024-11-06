@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserProfile, updateUserProfile, getUserProfileByEmail } from '@/services/userService';
 import { connectToDB } from '@/util/connectToDB';
-import User, {IUser} from '@/models/User.model';
 import { Types } from 'mongoose';  // Import Types for ObjectId handling
 
 /**
@@ -47,7 +46,7 @@ export async function PUT(req: NextRequest, { params }: { params: { identifier: 
   await connectToDB();
 
   const { identifier } = params;
-  const updateData = await req.json();  // Parse incoming complete user profile data
+  const updateData = await req.json();
 
   if (!identifier) {
     return new NextResponse(JSON.stringify({ success: false, error: 'User ID is required' }), { status: 400 });
@@ -99,7 +98,7 @@ export async function PUT(req: NextRequest, { params }: { params: { identifier: 
 /* 
  
  {
-  "username": "newUsernamedddddddddddddddddd",
+  "username": "newUsername",
   "email": "newEmail@example.com",
   "image": "https://example.com/new-image.jpg",
   "settings": {

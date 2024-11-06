@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import User from "@/models/User.model";
-import Community, {ICommunity,ICommunityModule} from "@/models/Community.model";
+import Community, {ICommunity,ICommunityModule, PointsScheme, UpdateData} from "@/models/Community.model";
 import Module, { IModule } from "@/models/Module.model";
 import { connectToDB } from "@/util/connectToDB";
 import { generateSlug } from "@/util/communityUtils/generateSlug";
@@ -45,23 +45,26 @@ export async function fetchAllCommunities(
 }
 
 /**
- * Creates a new community in the database. Add first user as creator and member (no one else).
+ * Creates a new community in the database and adds the initial modules with their customizations.
  *
  * @param {string} name - Community name.
  * @param {Types.ObjectId} creatorId - ID of the community creator.
  * @param {string} description - Community description.
  * @param {string} image - URL of the community image.
+ * @param {Types.ObjectId[]} modules - Array of module IDs to be added to the community.
  * @returns {Promise<ICommunity>} - The created community.
  */
 export async function createCommunity(
   name: string,
   creatorId: Types.ObjectId,
   description: string,
-  image: string
+  image: string,
+  modules: Types.ObjectId[]
 ): Promise<ICommunity> {
   await connectToDB();
   const slug = generateSlug(name);
 
+  // Create the community document with basic fields
   const community = new Community({
     name,
     slug,
@@ -71,7 +74,7 @@ export async function createCommunity(
     members: [
       {
         _id: creatorId,
-        role: "admin",
+        role: 'admin',
         points: 0,
         moduleProgress: [],
       },
@@ -81,10 +84,23 @@ export async function createCommunity(
     createdAt: new Date(),
   });
 
+  // Save the community to get the _id
   await community.save();
-  return community;
-}
 
+  // Step 1: Add each module to the community using addModuleToCommunity
+  for (const moduleId of modules) {
+    await addModuleToCommunity(
+      community._id as Types.ObjectId, // Explicitly cast community._id to ObjectId
+      moduleId as Types.ObjectId, // Explicitly cast moduleId to ObjectId
+      creatorId
+    );
+  }
+
+  // Step 2: Retrieve the updated community with modules and customizations populated
+  const updatedCommunity = await Community.findById(community._id);
+
+  return updatedCommunity!;
+}
 
 
 /**
@@ -174,37 +190,59 @@ export async function deleteCommunity(
   };
 }
 
+
+
 /**
  * Add a module to a community (Admin Only).
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to add.
+ * @param {Types.ObjectId} userId - The ID of the user performing the action (for admin check).
  * @returns {Promise<ICommunity>} - The updated community.
  */
 export async function addModuleToCommunity(
   communityId: Types.ObjectId,
-  moduleId: Types.ObjectId
+  moduleId: Types.ObjectId,
+  userId: Types.ObjectId
 ): Promise<ICommunity> {
-  await connectToDB();
-
   const community = await Community.findById(communityId);
   if (!community) {
-    throw new Error("Community not found");
+      throw new Error("Community not found");
   }
 
+  // Check if the user is an admin
+  const userIsAdmin = community.members.some(
+      member => member._id.equals(userId) && member.role === "admin"
+  );
+  if (!userIsAdmin) {
+      throw new Error("User does not have admin privileges");
+  }
+
+  // Check if the module is already added to the community
+  const moduleExists = community.modules.some(
+      module => module.moduleId.equals(moduleId)
+  );
+  if (moduleExists) {
+      throw new Error("Module is already added to the community");
+  }
+
+  // Retrieve module details from Module collection
   const module = await Module.findById(moduleId);
   if (!module) {
-    throw new Error("Module not found");
+      throw new Error("Module not found");
   }
 
-  // Initialize modules array if undefined and then add the module
-  if (!community.modules) {
-    community.modules = [];
-  }
+  // Ensure pointsScheme is correctly typed or set a default if missing
+  const customizations = {
+      pointsScheme: (module.customizations?.pointsScheme as PointsScheme) || {}
+  };
 
+  // Add the module with name, settings, and customizations (including points scheme) to community's modules array
   community.modules.push({
-    moduleId: module._id as Types.ObjectId,
-    settings: {}, // Default settings for the module
+      moduleId: module._id as Types.ObjectId,
+      moduleName: module.name,
+      settings: module.settings || {},                // Default settings from the module document
+      customizations                                  // Customizations with pointsScheme
   });
 
   await community.save();
@@ -239,18 +277,19 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
   return community.modules;
 }
 
+
 /**
  * Customize a module within a community (Admin Only).
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to customize.
- * @param {object} updateData - The new customization settings.
+ * @param {UpdateData} updateData - The new customization settings.
  * @returns {Promise<ICommunity>} - The updated community.
  */
 export async function customizeModule(
   communityId: Types.ObjectId,
   moduleId: Types.ObjectId,
-  updateData: object
+  updateData: UpdateData
 ): Promise<ICommunity> {
   await connectToDB();
 
@@ -259,46 +298,84 @@ export async function customizeModule(
     throw new Error("Community not found");
   }
 
-  // Find the specific module in the community
-  const module = community.modules.find(
-    (mod) => mod.moduleId.toString() === moduleId.toString()
+  // Step 1: Check if customization already exists for this module in community's customization array
+  let moduleCustomization = community.customization.find(
+    (custom) => custom.moduleId.toString() === moduleId.toString()
   );
-  if (!module) {
-    throw new Error("Module not found in community");
-  }
 
-  // Update the module settings
-  module.settings = { ...module.settings, ...updateData };
+  if (moduleCustomization) {
+    // Step 2a: Update the existing customization with new settings
+    moduleCustomization.pointsScheme = { 
+      ...moduleCustomization.pointsScheme,
+      ...(updateData.customizations?.pointsScheme || {})
+    };
+  } else {
+    // Step 2b: If no customization exists, find default settings in modules array
+    const moduleDefault = community.modules.find(
+      (mod) => mod.moduleId.toString() === moduleId.toString()
+    );
+    
+    if (!moduleDefault) {
+      throw new Error("Module not found in community's modules array");
+    }
+
+    // Step 3: Copy the default points scheme to create a new customization entry
+    const newCustomization = {
+      moduleId: moduleDefault.moduleId,
+      pointsScheme: { 
+        ...moduleDefault.customizations?.pointsScheme, 
+        ...(updateData.customizations?.pointsScheme || {})
+      }
+    };
+
+    // Step 4: Add the new customization to the community's customization array
+    community.customization.push(newCustomization);
+  }
 
   await community.save();
   return community;
 }
 
+
+import Task from '@/models/Task.model'; //remove all tasks related to model
+
 /**
- * Delete a module from a community (Admin Only).
+ * Deletes a module from a community and removes associated tasks and customizations.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to delete.
- * @returns {Promise<{ message: string }>} - Success message.
+ * @returns {Promise<void>}
  */
 export async function deleteModuleFromCommunity(
   communityId: Types.ObjectId,
   moduleId: Types.ObjectId
-): Promise<{ message: string }> {
+): Promise<void> {
   await connectToDB();
 
+  // Step 1: Find the community and remove the module's customization
   const community = await Community.findById(communityId);
   if (!community) {
     throw new Error("Community not found");
   }
 
-  // Remove the module from the community's module list
+  // Remove the customization for the module
+  community.customization = community.customization.filter(
+    (custom) => custom.moduleId.toString() !== moduleId.toString()
+  );
+
+  // Remove the module from the community's modules list
   community.modules = community.modules.filter(
     (mod) => mod.moduleId.toString() !== moduleId.toString()
   );
 
+  // Save the community with updated modules and customizations
   await community.save();
-  return { message: "Module removed successfully" };
+
+  // Step 2: Delete all tasks associated with this module in the specified community
+  await Task.deleteMany({
+    communityId: communityId,
+    moduleId: moduleId,
+  });
 }
 
 /**
@@ -417,6 +494,14 @@ export async function leaveCommunity(
 
   // Remove the community from the user's communities list
   await User.findByIdAndUpdate(userId, { $pull: { communities: communityId } });
+
+   // Remove tasks associated with this user in the specific community
+   await Task.deleteMany({
+    communityId: communityId,
+    userId: userId,
+  });
+
+  console.log(`Deleted all tasks for user ${userId} in community ${communityId}`);
 
   return community;
 }

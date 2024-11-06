@@ -60,3 +60,23 @@ export async function DELETE(req: NextRequest, { params }: { params: { community
     return new NextResponse('Error deleting module from community', { status: 500 });
   }
 }
+
+/**
+ * PUT 
+ * http://localhost:3000/api/communities/672a8e5cfe46364da4a342d0/module/64ffdbcd9e73a0f2e05e48b9
+{
+  "customizations": {
+    "pointsScheme": {
+      "easy": 50,
+      "medium": 99,  // Customized points for medium difficulty
+      "hard": 150
+    }
+  }
+}
+   
+*/
+
+/**
+ * DELETE
+ * http://localhost:3000/api/communities/672a8e5cfe46364da4a342d0/module/64ffdbcd9e73a0f2e05e48b9
+ */

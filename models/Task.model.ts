@@ -1,5 +1,10 @@
 import mongoose, {Document, Schema, Model} from "mongoose";
 
+/**
+ * ITask: Represents the structure of a saved task document in MongoDB. 
+ * This is the schema you defined for Task, and it includes all properties that a stored task has. 
+ * When you fetch a task from the database, it will be typed as ITask.
+ */
 export interface ITask extends Document {
     userId: mongoose.Types.ObjectId;
     communityId: mongoose.Types.ObjectId;
@@ -9,6 +14,24 @@ export interface ITask extends Document {
     duration?: number; // Only for time-based tasks
     points: number; // Calculated based on module’s points scheme or other customization
 }
+
+/**
+ * TaskData: This is more of an input type for creating a task.
+ * It includes extra fields, like taskType and difficulty, which might not be part of the stored Task document itself
+ * but are necessary to calculate points. You could use TaskData when receiving data from the API request and passing 
+ * it into functions before saving.
+ */
+export interface TaskData {
+  userId: mongoose.Types.ObjectId;
+  communityId: mongoose.Types.ObjectId;
+  moduleId: mongoose.Types.ObjectId;
+  difficulty: string; // e.g., "easy", "medium", "hard"
+  points: number;
+  description?: string;
+  completedAt?: Date;
+  duration?: number;
+}
+
 
 const TaskSchema: Schema = new mongoose.Schema({
     userId: { type: mongoose.Types.ObjectId, ref: "User", required: true, index: true },
