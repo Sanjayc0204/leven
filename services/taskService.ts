@@ -92,48 +92,30 @@ export async function batchUpdateModules(
 
 
 
-export async function calculatePoints(
+  export async function calculatePoints(
     communityId: Types.ObjectId,
     moduleId: Types.ObjectId,
     difficulty: string
-): Promise<number> {
-    await connectToDB(); // Ensure connection
-
-    console.log("Calculating points for Community:", communityId, "Module:", moduleId, "Difficulty:", difficulty);
-
-    const community = await Community.findById(communityId);
+  ): Promise<number> {
+    await connectToDB();
+  
+    const community = await Community.findById(communityId)
+      .select('modules')
+      .lean()
+      .exec();
+  
     if (!community) throw new Error('Community not found');
-
-    // Step 1: Check for customization in the `customization` array
-    const moduleCustomization = community.customization.find(
-        (custom) => custom.moduleId.toString() === moduleId.toString()
-    );
-    console.log("Module Customization:", moduleCustomization);
-
-    if (moduleCustomization) {
-        const pointsScheme = moduleCustomization.pointsScheme as Record<string, number>;
-        if (pointsScheme && pointsScheme[difficulty] != null) {
-            console.log("Custom Points Scheme Found:", pointsScheme[difficulty]);
-            return pointsScheme[difficulty];
-        }
-    }
-
-    // Step 2: Fallback to default settings in the `modules` array if no customization found
-    const moduleDefault = community.modules.find(
-        (mod) => mod.moduleId.toString() === moduleId.toString()
-    );
-    console.log("Module Default:", moduleDefault);
-
-    if (moduleDefault?.customizations?.pointsScheme) {
-        const defaultPointsScheme = moduleDefault.customizations.pointsScheme as Record<string, number>;
-        if (defaultPointsScheme[difficulty] != null) {
-            console.log("Default Points Scheme Found:", defaultPointsScheme[difficulty]);
-            return defaultPointsScheme[difficulty];
-        }
-    }
-
-    throw new Error(`Points configuration not found for module ${moduleId} with difficulty "${difficulty}". Ensure that points for difficulty "${difficulty}" are defined in either community customizations or module defaults.`);
-}
+  
+    const module = community.modules.find(mod => mod.moduleId.toString() === moduleId.toString());
+    if (!module) throw new Error("Module not found in community");
+  
+    // Use the points scheme directly from customizations in the module
+    const points = module.customizations?.pointsScheme?.[difficulty];
+    if (points == null) throw new Error(`Points not configured for difficulty "${difficulty}"`);
+  
+    return points;
+  }
+  
 
 
 /**

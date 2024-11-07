@@ -1,5 +1,4 @@
-import User, { IUser } from '@/models/User.model';  // Assuming the IUser interface exists
-import Community, { ICommunity } from '@/models/Community.model';  // Assuming the ICommunity interface exists
+import User, { IUser } from '@/models/User.model';  
 import { Types } from 'mongoose';
 import { connectToDB } from '@/util/connectToDB';
 

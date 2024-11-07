@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import User from "@/models/User.model";
-import Community, {ICommunity,ICommunityModule, PointsScheme, UpdateData} from "@/models/Community.model";
+import Community, {ICommunity,ICommunityModule, PointsScheme} from "@/models/Community.model";
 import Module, { IModule } from "@/models/Module.model";
 import { connectToDB } from "@/util/connectToDB";
 import { generateSlug } from "@/util/communityUtils/generateSlug";
@@ -259,117 +259,78 @@ export async function addModuleToCommunity(
 
 
 
-
 /**
- * Fetches all modules for a specific community, applying customizations if available.
+ * Fetches all modules for a specific community
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
- * @returns {Promise<Array<any>>} - An array of modules associated with the community.
+ * @returns {Promise<Array<ICommunityModule>>} - An array of modules associated with the community.
  */
-export async function getCommunityModules(communityId: Types.ObjectId): Promise<any[]> {
-  await connectToDB(); // Ensure the DB is connected
+export async function getCommunityModules(communityId: Types.ObjectId): Promise<ICommunityModule[]> {
+  await connectToDB();
 
-  // Query the community and retrieve both modules and customization fields
+  // Query the community and populate module details
   const community = await Community.findById(communityId)
-    .select('modules customization')
+    .select('modules')
     .populate({
       path: 'modules.moduleId',
-      select: 'name moduleType customizations', // Select necessary fields from Module
+      select: 'name moduleType', // Fetch base module details
     })
-    .lean()  // Use lean for read-only data
+    .lean()
     .exec();
 
   if (!community) {
     throw new Error("Community not found");
   }
 
-  // Merge modules with customizations if they exist
-  const mergedModules = community.modules.map((module) => {
-    // Type assertion: treat `moduleId` as a populated object rather than `ObjectId`
-    const populatedModule = module.moduleId as any; 
-
-    // Find any matching customization for this module
-    const customization = community.customization.find(
-      (custom) => custom.moduleId.toString() === populatedModule._id.toString()
-    );
-
-    // Apply customizations if they exist; otherwise, retain the default customizations from the module itself
-    return {
-      ...module,
-      moduleId: {
-        ...populatedModule,
-        customizations: customization ? customization.pointsScheme : populatedModule.customizations,
-      },
-    };
-  });
-
-  return mergedModules;
+  // Return modules with direct customizations if present
+  return community.modules.map((module) => ({
+    ...module,
+    settings: module.settings || {}, // Include default settings if none are set
+    customizations: module.customizations || {},  // Use the customizations directly from modules array
+  }));
 }
 
 
+
 /**
- * Customize a module within a community (Admin Only).
+ * Customize a module's pointsScheme directly without nesting in a community.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to customize.
- * @param {UpdateData} updateData - The new customization settings.
- * @returns {Promise<ICommunity>} - The updated community.
+ * @param {Record<string, number>} pointsSchemeUpdates - New points scheme settings.
+ * @returns {Promise<ICommunity>} - The updated community document.
  */
 export async function customizeModule(
   communityId: Types.ObjectId,
   moduleId: Types.ObjectId,
-  updateData: UpdateData
+  pointsSchemeUpdates: Record<string, number>
 ): Promise<ICommunity> {
   await connectToDB();
 
   const community = await Community.findById(communityId);
-  if (!community) {
-    throw new Error("Community not found");
-  }
+  if (!community) throw new Error("Community not found");
 
-  // Step 1: Check if customization already exists for this module in community's customization array
-  let moduleCustomization = community.customization.find(
-    (custom) => custom.moduleId.toString() === moduleId.toString()
-  );
+  // Locate the module within the community's modules array
+  const module = community.modules.find((mod) => mod.moduleId.equals(moduleId));
+  if (!module) throw new Error("Module not found in community");
 
-  if (moduleCustomization) {
-    // Step 2a: Update the existing customization with new settings
-    moduleCustomization.pointsScheme = { 
-      ...moduleCustomization.pointsScheme,
-      ...(updateData.customizations?.pointsScheme || {})
-    };
-  } else {
-    // Step 2b: If no customization exists, find default settings in modules array
-    const moduleDefault = community.modules.find(
-      (mod) => mod.moduleId.toString() === moduleId.toString()
-    );
-    
-    if (!moduleDefault) {
-      throw new Error("Module not found in community's modules array");
-    }
+  // Directly replace the pointsScheme with the new updates
+  module.customizations.pointsScheme = pointsSchemeUpdates;
 
-    // Step 3: Copy the default points scheme to create a new customization entry
-    const newCustomization = {
-      moduleId: moduleDefault.moduleId,
-      pointsScheme: { 
-        ...moduleDefault.customizations?.pointsScheme, 
-        ...(updateData.customizations?.pointsScheme || {})
-      }
-    };
-
-    // Step 4: Add the new customization to the community's customization array
-    community.customization.push(newCustomization);
-  }
-
+  // Save the updated community
   await community.save();
   return community;
 }
 
 
+
+
+
+
 import Task from '@/models/Task.model'; //remove all tasks related to model
 
 /**
- * Deletes a module from a community and removes associated tasks and customizations.
+ * Deletes a module from a community and removes associated tasks.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to delete.
@@ -381,23 +342,18 @@ export async function deleteModuleFromCommunity(
 ): Promise<void> {
   await connectToDB();
 
-  // Step 1: Find the community and remove the module's customization
+  // Step 1: Find the community and remove the module
   const community = await Community.findById(communityId);
   if (!community) {
     throw new Error("Community not found");
   }
 
-  // Remove the customization for the module
-  community.customization = community.customization.filter(
-    (custom) => custom.moduleId.toString() !== moduleId.toString()
-  );
-
-  // Remove the module from the community's modules list
+  // Remove the module and its customizations directly within the `modules` array
   community.modules = community.modules.filter(
     (mod) => mod.moduleId.toString() !== moduleId.toString()
   );
 
-  // Save the community with updated modules and customizations
+  // Save the updated community document
   await community.save();
 
   // Step 2: Delete all tasks associated with this module in the specified community
