@@ -5,28 +5,14 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
-import { Separator } from "./separator";
-import { CustomTrigger } from "./sidebar-trigger";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "./breadcrumb";
 import Link from "next/link";
-import { LayoutDashboardIcon } from "lucide-react";
-import CommunitySidebar from "./communities-sidebar";
-import CommunityHeader from "./communities-header";
+import { LayoutDashboardIcon, SquarePen } from "lucide-react";
 
 // Static Menu items outside the component
 const items = [
@@ -42,9 +28,10 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 
 interface AppSidebarProps {
   communityName: string;
+  isAdmin: boolean;
 }
 
-export function AppSidebar({ communityName }: AppSidebarProps) {
+export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
   const pathname = usePathname();
   const pathSegments = pathname.split("/").filter(Boolean);
 
@@ -53,12 +40,23 @@ export function AppSidebar({ communityName }: AppSidebarProps) {
     ? pathname
     : `${pathname}/dashboard`;
 
+  const editCommunityPath = pathname.includes("edit-community")
+    ? pathname
+    : `${pathname}/edit-modules`;
   // Dynamic menu items inside the component
   const dynamicItems = [
     {
       title: "Dashboard",
       url: dashboardPath, // Dynamically generate the dashboard path
       icon: LayoutDashboardIcon,
+    },
+  ];
+
+  const adminItems = [
+    {
+      title: "Edit Modules",
+      url: editCommunityPath,
+      icon: SquarePen,
     },
   ];
 
@@ -70,7 +68,11 @@ export function AppSidebar({ communityName }: AppSidebarProps) {
             <SidebarGroupLabel>{communityName}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {[...items, ...dynamicItems].map((item) => (
+                {[
+                  ...items,
+                  ...dynamicItems,
+                  ...(isAdmin ? adminItems : []),
+                ].map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <Link href={item.url}>
                       <SidebarMenuButton asChild>

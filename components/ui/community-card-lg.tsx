@@ -8,6 +8,7 @@ interface LargeCommunityCardProps {
   communityName: string;
   communityDescription: string;
   _id: string;
+  memberCount: number;
 }
 
 export default function LargeCommunityCard({
@@ -15,6 +16,7 @@ export default function LargeCommunityCard({
   communityName,
   communityDescription,
   _id,
+  memberCount,
 }: LargeCommunityCardProps) {
   return (
     <Link href={`/communities/${_id}`} passHref>
@@ -40,7 +42,7 @@ export default function LargeCommunityCard({
           </p>
           <div className="flex items-center text-xs text-muted-foreground group-hover:text-slate-300">
             <Users className="h-3 w-3 mr-1 group-hover:text-slate-100" />
-            <span>21,018,212</span>
+            <span>{memberCount}</span>
           </div>
         </CardContent>
       </Card>

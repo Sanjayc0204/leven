@@ -88,6 +88,7 @@ export default function Communities() {
                 communityDescription={community.description}
                 _id={community._id as string}
                 key={community._id as string}
+                memberCount={community.members.length}
               />
             ))}
           </div>

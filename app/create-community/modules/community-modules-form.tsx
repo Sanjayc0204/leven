@@ -44,7 +44,6 @@ export default function ModuleSelection() {
   const [selectedModules, setSelectedModules] = useState<Module[]>([]);
   const [isLoading, setIsLoading] = useState(true); // Initialize isLoading as true
 
-  const stepData = useStepStore((state) => state.stepData);
   const setStepData = useStepStore((state) => state.setStepData);
 
   const selectedModulesFromStore = useStepStore(
