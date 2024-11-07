@@ -11,9 +11,11 @@ export interface ITask extends Document {
     moduleId: mongoose.Types.ObjectId;
     description: string;
     completedAt: Date;
-    duration?: number; // Only for time-based tasks
-    points: number; // Calculated based on module’s points scheme or other customization
+    points: number;
+    duration?:number;
+    metadata?: string[];  // Array of tags related to the task
 }
+
 
 /**
  * TaskData: This is more of an input type for creating a task.
@@ -25,11 +27,11 @@ export interface TaskData {
   userId: mongoose.Types.ObjectId;
   communityId: mongoose.Types.ObjectId;
   moduleId: mongoose.Types.ObjectId;
-  difficulty: string; // e.g., "easy", "medium", "hard"
   points: number;
   description?: string;
   completedAt?: Date;
   duration?: number;
+  metadata?: string[];  // Array of tags related to the task
 }
 
 
@@ -41,7 +43,9 @@ const TaskSchema: Schema = new mongoose.Schema({
     completedAt: { type: Date, default: Date.now, index: true },
     duration: { type: Number }, // Optional field for time-based tasks (e.g., session length in minutes)
     points: { type: Number, required: true }, // Points granted for the task
+    metadata: { type: [String], default: [] },  // Array of tags for flexible task attributes
   });
 
+  
 const Task: Model<ITask> = mongoose.models?.Task || mongoose.model<ITask>("Task", TaskSchema);
 export default Task;

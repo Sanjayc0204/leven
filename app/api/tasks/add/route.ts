@@ -1,63 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";   
 import { Types } from 'mongoose';
-import { calculatePoints, recordTask } from '@/services/taskService';
+import { calculatePoints, recordTask, batchUpdateModules} from '@/services/taskService';
 import { findUserByIdOrEmail } from '@/util/userUtils/getUserIdFromIdentifier';
 import { connectToDB } from '@/util/connectToDB';
 
 /**
- * Adds a new task and points associated for a user based on ID or Email.
+ * Adds a new task with flexible tags (e.g., difficulty, type).
+ * 
+ * THIS MAINLY WORKS WITH TYPES WHERE YOU SEND IN [easy, medium, hard], will adjust for flexibility in the future
+ * 
+ * Also if you pass in 'all' into communityId, it will batch update all communities.
  *
  * @param {NextRequest} req - The request object.
  * @returns {Promise<NextResponse>} - The response object.
- * 
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
    try {
-      await connectToDB(); // Ensure database connection is established
-
-      // Step 1: Parse the request body and log inputs
+      await connectToDB();
       const body = await req.json();
-      const { identifier, communityId, moduleId, difficulty, description } = body;
-      console.log("Request Body:", body);
+      const { identifier, communityId, moduleId, metadata = [], description } = body;
+      const typedMetadata: string[] = metadata;
 
-      // Step 2: Find user by ID or email using utility function
-      console.log("Searching user by identifier:", identifier);
+      // Find user by ID or email
       const user = await findUserByIdOrEmail(identifier);
-      if (!user) {
-         console.log("User not found:", identifier);
-         return new NextResponse('User not found', { status: 404 });
-      }
-      console.log("User found:", user);
+      if (!user) return new NextResponse('User not found', { status: 404 });
 
-      // Step 3: Validate and convert communityId and moduleId
-      if (!Types.ObjectId.isValid(communityId) || !Types.ObjectId.isValid(moduleId)) {
-         console.log("Invalid community ID or module ID:", communityId, moduleId);
-         return new NextResponse('Invalid community ID or module ID', { status: 400 });
+      // Validate ObjectId for moduleId
+      if (!Types.ObjectId.isValid(moduleId)) {
+         return new NextResponse('Invalid module ID', { status: 400 });
       }
-
-      const communityObjectId = new Types.ObjectId(communityId);
       const moduleObjectId = new Types.ObjectId(moduleId);
-      console.log("Validated ObjectIds - Community:", communityObjectId, "Module:", moduleObjectId);
 
-      // Step 4: Calculate points for the task
-      const points = await calculatePoints(communityObjectId, moduleObjectId, difficulty);
-      console.log("Calculated Points:", points);
+      // Handle "all" keyword for communityId
+      if (communityId === "all") {
+         const result = await batchUpdateModules(user._id, moduleObjectId, typedMetadata, description);
+         return new NextResponse(JSON.stringify(result), { status: 200 });
+      }
 
-      // Step 5: Record the task with the calculated points
+      // Validate ObjectId for communityId if not "all"
+      if (!Types.ObjectId.isValid(communityId)) {
+         return new NextResponse('Invalid community ID', { status: 400 });
+      }
+      const communityObjectId = new Types.ObjectId(communityId);
+
+      // Calculate points based on difficulty in metadata
+      const difficulty = typedMetadata.find((tag: string) => ["easy", "medium", "hard"].includes(tag));
+      const points = difficulty ? await calculatePoints(communityObjectId, moduleObjectId, difficulty) : 0;
+
+      // Prepare and record task for a single community
       const taskData = {
-         userId: user._id, // Use user._id obtained from findUserByIdOrEmail
+         userId: user._id,
          communityId: communityObjectId,
          moduleId: moduleObjectId,
-         difficulty,
          description,
          points,
+         metadata: typedMetadata,
       };
-      console.log("Task Data:", taskData);
 
       const taskResult = await recordTask(taskData);
-      console.log("Task Recorded:", taskResult);
-
-      // Step 6: Respond with the recorded task details
       return new NextResponse(JSON.stringify(taskResult), { status: 201 });
    } catch (error) {
       const err = error as Error;
@@ -66,13 +66,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
    }
 }
 
+
 /**
 POST http://localhost:3000/api/tasks/add
 {
    "identifier": "67297c206f4082ed030f7728",
    "communityId": "672a8e5cfe46364da4a342d0", 
    "moduleId": "64ffdbcd9e73a0f2e05e48b9",    
-   "difficulty": "medium",                    
-   "description": "Leetcode Submission"
+   "description": "Leetcode Submission",
+   "metadata": ["easy", "hashmap"]      //code will read for easy, medium, hard to adjust points, include question type here as well or any other attributes.
 }
  */

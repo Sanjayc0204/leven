@@ -4,6 +4,12 @@ import { Types } from 'mongoose';
 import { updateModuleScore } from '@/services/communityService';
 import { connectToDB } from "@/util/connectToDB";
 
+interface LeanCommunity {
+    _id: Types.ObjectId;
+    modules: { moduleId: Types.ObjectId }[];
+    customization: any;
+  }
+
 
 /**
  * Record a new task in the database and update the user's points within the community.
@@ -14,33 +20,76 @@ import { connectToDB } from "@/util/connectToDB";
 export async function recordTask(taskData: TaskData): Promise<ITask> {
     await connectToDB();
 
-    // Step 1: Calculate the task points
-    const points = await calculatePoints(
-        taskData.communityId,
-        taskData.moduleId,
-        taskData.difficulty
-    );
-
-    const descriptionWithDifficulty = `${taskData.description || 'Task Submission'} - Difficulty: ${taskData.difficulty}`;
-
-    // Step 2: Save the new task in the Task collection
     const task = new Task({
         userId: taskData.userId,
         communityId: taskData.communityId,
         moduleId: taskData.moduleId,
-        description: descriptionWithDifficulty,
+        description: taskData.description || 'Task Submission',
         completedAt: Date.now(),
-        duration: taskData.duration,
-        points, // Use the calculated points
+        points: taskData.points,
+        metadata: taskData.metadata,  // Make sure metadata is stored
     });
 
     await task.save();
 
-    // Step 3: Update the user's score within the community
-    await updateModuleScore(taskData.communityId, taskData.userId, taskData.moduleId, points);
+    // Update the user's score within the community
+    await updateModuleScore(taskData.communityId, taskData.userId, taskData.moduleId, taskData.points);
 
     return task;
 }
+
+
+/**
+ * Batch updates communities for a specific module.
+ *
+ * @param {Types.ObjectId} userId - The user's ID.
+ * @param {Types.ObjectId} moduleId - The module ID to be updated across communities.
+ * @param {string[]} metadata - Metadata tags for the task.
+ * @param {string} description - Description of the task.
+ * @returns {Promise<any>} - The results of batch updates.
+ */
+export async function batchUpdateModules(
+    userId: Types.ObjectId,
+    moduleId: Types.ObjectId,
+    metadata: string[],
+    description: string
+  ): Promise<any> {
+      await connectToDB();
+  
+      // Step 1: Find communities where the user is a member and the module exists
+      const communities = await Community.find({
+          members: { $elemMatch: { _id: userId } },   // Only communities where user is a member
+          modules: { $elemMatch: { moduleId: moduleId } },  // Only communities containing the specified module
+      })
+      .select('_id modules customization')  // Select only the fields we need
+      .lean<LeanCommunity[]>();  // Use `lean` with a custom subset type
+  
+      const results = [];
+  
+      for (const community of communities) {
+          const communityId = community._id;
+  
+          // Calculate points based on community's customization
+          const difficulty = metadata.find(tag => ["easy", "medium", "hard"].includes(tag));
+          const points = difficulty ? await calculatePoints(communityId, moduleId, difficulty) : 0;
+  
+          // Record task for each applicable community
+          const taskData: TaskData = {
+              userId,
+              communityId,
+              moduleId,
+              description,
+              points,
+              metadata,
+          };
+  
+          const taskResult = await recordTask(taskData);
+          results.push(taskResult);
+      }
+  
+      return results;
+  }
+
 
 
 export async function calculatePoints(
@@ -85,7 +134,6 @@ export async function calculatePoints(
 
     throw new Error(`Points configuration not found for module ${moduleId} with difficulty "${difficulty}". Ensure that points for difficulty "${difficulty}" are defined in either community customizations or module defaults.`);
 }
-
 
 
 /**

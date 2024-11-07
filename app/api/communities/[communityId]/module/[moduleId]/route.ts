@@ -3,7 +3,8 @@ import { customizeModule, deleteModuleFromCommunity } from '@/services/community
 import { Types } from 'mongoose';
 
 /**
- * Updates module settings within a community.
+ * Updates an existing customizations module settings within a community.
+ * *** Note this acts as both a POST/PUT in service layer. If customziation does not exist in array, it will POST, else PUT.
  *
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.

@@ -258,30 +258,52 @@ export async function addModuleToCommunity(
 
 
 
+
+
 /**
- * Fetches all modules for a specific community.
+ * Fetches all modules for a specific community, applying customizations if available.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
- * @returns {Promise<Array<ICommunityModule>>} - An array of modules associated with the community.
+ * @returns {Promise<Array<any>>} - An array of modules associated with the community.
  */
-
-export async function getCommunityModules(communityId: Types.ObjectId): Promise<ICommunityModule[]> {
+export async function getCommunityModules(communityId: Types.ObjectId): Promise<any[]> {
   await connectToDB(); // Ensure the DB is connected
 
-  // Query the community and populate modules
+  // Query the community and retrieve both modules and customization fields
   const community = await Community.findById(communityId)
-    .select('modules')
+    .select('modules customization')
     .populate({
       path: 'modules.moduleId',
-      select: 'name moduleType customizations', // Only select necessary fields from Module
+      select: 'name moduleType customizations', // Select necessary fields from Module
     })
+    .lean()  // Use lean for read-only data
     .exec();
 
   if (!community) {
     throw new Error("Community not found");
   }
 
-  return community.modules;
+  // Merge modules with customizations if they exist
+  const mergedModules = community.modules.map((module) => {
+    // Type assertion: treat `moduleId` as a populated object rather than `ObjectId`
+    const populatedModule = module.moduleId as any; 
+
+    // Find any matching customization for this module
+    const customization = community.customization.find(
+      (custom) => custom.moduleId.toString() === populatedModule._id.toString()
+    );
+
+    // Apply customizations if they exist; otherwise, retain the default customizations from the module itself
+    return {
+      ...module,
+      moduleId: {
+        ...populatedModule,
+        customizations: customization ? customization.pointsScheme : populatedModule.customizations,
+      },
+    };
+  });
+
+  return mergedModules;
 }
 
 
@@ -385,6 +407,8 @@ export async function deleteModuleFromCommunity(
   });
 }
 
+
+
 /**
  * Adds a user to a community.
  *
@@ -434,6 +458,8 @@ export async function joinCommunity(
 
   return community; // Return the updated community document
 }
+
+
 
 import { IUser } from "@/models/User.model"; // Assuming you have a User model and interface
 /**
