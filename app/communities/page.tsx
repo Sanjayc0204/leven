@@ -11,6 +11,7 @@ import LargeCommunityCard from "@/components/ui/community-card-lg";
 import CommunityCardLargeSkeleton from "@/components/ui/community-card-lg-skeleton";
 import { Ghost, Plus } from "lucide-react";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 export default function Communities() {
   const { isLoading, isError, data, error } = useCommunities();
@@ -33,7 +34,7 @@ export default function Communities() {
               <Button>Filter</Button>
             </DropdownMenuTrigger>
           </DropdownMenu>
-          <Button>Create Community</Button>
+          {/* <Button>Create Community</Button> */}
         </div>
         <div className="flex flex-wrap items-center justify-center m-8 gap-8 ">
           <CommunityCardLargeSkeleton />
@@ -63,20 +64,26 @@ export default function Communities() {
           </DropdownMenu>
         </div>
         <div className="flex justify-center align-items pt-4">
-          <Button
-            variant="expandIcon"
-            Icon={() => <Plus className="w-4 h-4" />} // Adjust size with Tailwind width and height classes
-            iconPlacement="right"
-            className=" bg-transparent text-black hover:bg-transparent underline"
-          >
-            Create Community
-          </Button>
+          <Link href="/create-community">
+            <Button
+              variant="expandIcon"
+              Icon={() => <Plus className="w-4 h-4" />} // Adjust size with Tailwind width and height classes
+              iconPlacement="right"
+              className=" bg-transparent text-black hover:bg-transparent underline"
+            >
+              Create Community
+            </Button>
+          </Link>
         </div>
         <div className="flex items-center justify-center">
           <div className="flex flex-wrap items-center justify-center m-4 gap-8 max-w-[1000px] ">
             {data.map((community) => (
               <LargeCommunityCard
-                imgUrl={community.image}
+                imgUrl={
+                  community.image === "https://example.com/image.jpg"
+                    ? "https://variety.com/wp-content/uploads/2021/09/Summit-of-the-Gods.jpg"
+                    : community.image
+                }
                 communityName={community.name}
                 communityDescription={community.description}
                 _id={community._id as string}
