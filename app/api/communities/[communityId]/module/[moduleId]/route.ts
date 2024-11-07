@@ -3,7 +3,7 @@ import { customizeModule, deleteModuleFromCommunity } from '@/services/community
 import { Types } from 'mongoose';
 
 /**
- * Updates an existing customizations module settings within a community.
+ * Updates an existing customizations module settings within a community. (*notes this appends directly into the poin scheme)
  *
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.
@@ -65,13 +65,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { community
  * PUT 
  * http://localhost:3000/api/communities/672a8e5cfe46364da4a342d0/module/64ffdbcd9e73a0f2e05e48b9
 {
-  "customizations": {
-    "pointsScheme": {
-      "easy": 50,
-      "medium": 99,  // Customized points for medium difficulty
-      "hard": 150
-    }
-  }
+    "easy": 50,
+    "medium": 120, 
+    "hard": 150
 }
    
 */

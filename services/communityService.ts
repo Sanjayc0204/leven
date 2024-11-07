@@ -291,32 +291,37 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
 }
 
 
+
+/**
+ * Customize a module's pointsScheme directly without nesting in a community.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @param {Types.ObjectId} moduleId - The ID of the module to customize.
+ * @param {Record<string, number>} pointsSchemeUpdates - New points scheme settings.
+ * @returns {Promise<ICommunity>} - The updated community document.
+ */
 export async function customizeModule(
   communityId: Types.ObjectId,
   moduleId: Types.ObjectId,
-  pointsSchemeUpdates: Record<string, number> // Key-value pairs for dynamic difficulty levels
+  pointsSchemeUpdates: Record<string, number>
 ): Promise<ICommunity> {
   await connectToDB();
 
   const community = await Community.findById(communityId);
-  if (!community) {
-    throw new Error("Community not found");
-  }
+  if (!community) throw new Error("Community not found");
 
-  const module = community.modules.find(mod => mod.moduleId.equals(moduleId));
-  if (!module) {
-    throw new Error("Module not found in community");
-  }
+  // Locate the module within the community's modules array
+  const module = community.modules.find((mod) => mod.moduleId.equals(moduleId));
+  if (!module) throw new Error("Module not found in community");
 
-  // Update pointsScheme by directly modifying the object
-  module.customizations.pointsScheme = {
-    ...module.customizations.pointsScheme,
-    ...pointsSchemeUpdates,  // Merge updates into the existing pointsScheme
-  };
+  // Directly replace the pointsScheme with the new updates
+  module.customizations.pointsScheme = pointsSchemeUpdates;
 
+  // Save the updated community
   await community.save();
   return community;
 }
+
 
 
 

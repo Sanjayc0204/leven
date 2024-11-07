@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema, Model, Types } from "mongoose";
-import Task from "./Task.model";
 
 // Define points scheme for module customizations
 export interface PointsScheme {
@@ -51,7 +50,6 @@ export interface UpdateData {
   };
 }
 
-// Define the schema with optimized fields
 const CommunitySchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String, unique: true },
@@ -65,21 +63,12 @@ const CommunitySchema = new mongoose.Schema({
   },
   members: [
     {
-      _id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
+      _id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
       role: { type: String, enum: ["admin", "member"], default: "member" },
       points: { type: Number, default: 0 },
       moduleProgress: [
         {
-          moduleId: {
-            type: mongoose.Types.ObjectId,
-            ref: "Module",
-            required: true,
-          },
+          moduleId: { type: mongoose.Types.ObjectId, ref: "Module", required: true },
           totalPoints: { type: Number, default: 0 },
           totalTime: { type: Number, default: 0 },
         },
@@ -90,9 +79,12 @@ const CommunitySchema = new mongoose.Schema({
     {
       moduleId: { type: mongoose.Types.ObjectId, ref: "Module", required: true },
       moduleName: { type: String, required: true },
-      settings: { type: Object, default: {} }, // For future use, maybe useful
+      settings: { type: Object, default: {} }, // Placeholder for future use
       customizations: {
-        pointsScheme: { type: Map, of: Number, default: {} },  // Allow flexible keys with numeric values
+        pointsScheme: {
+          type: Object, // Store as a regular object
+          default: {},  // Default to an empty object if not specified
+        },
       },
     },
   ],

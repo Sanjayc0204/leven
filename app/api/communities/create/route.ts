@@ -14,16 +14,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // Validate the creatorId and ensure modules array has at least one module ID
     if (!Types.ObjectId.isValid(creatorId)) {
-      return new NextResponse(JSON.stringify({ success: false, error: 'Invalid creator ID' }), { status: 400 });
+      return new NextResponse(JSON.stringify({ success: false, error: 'Invalid creator ID' }), { status: 401 });
     }
     if (!modules || !Array.isArray(modules) || modules.length === 0) {
-      return new NextResponse(JSON.stringify({ success: false, error: 'At least one module must be selected' }), { status: 400 });
+      return new NextResponse(JSON.stringify({ success: false, error: 'At least one module must be selected' }), { status: 402 });
     }
 
     // Validate that each module ID in the modules array is a valid ObjectId
     const validModuleIds = modules.every((id: string) => Types.ObjectId.isValid(id));
     if (!validModuleIds) {
-      return new NextResponse(JSON.stringify({ success: false, error: 'One or more module IDs are invalid' }), { status: 400 });
+      return new NextResponse(JSON.stringify({ success: false, error: 'One or more module IDs are invalid' }), { status: 403 });
     }
 
     // Call the service to create a community
