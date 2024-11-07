@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 
 /**
  * Updates an existing customizations module settings within a community.
- * *** Note this acts as both a POST/PUT in service layer. If customziation does not exist in array, it will POST, else PUT.
  *
  * @param {NextRequest} req - The request object.
  * @param {Object} params - The request parameters.
@@ -76,6 +75,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { community
 }
    
 */
+
 
 /**
  * DELETE

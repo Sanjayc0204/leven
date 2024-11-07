@@ -1,23 +1,29 @@
 import mongoose, { Document, Schema, Model, Types } from "mongoose";
 import Task from "./Task.model";
 
-// Define interfaces for subdocuments
+// Define points scheme for module customizations
+export interface PointsScheme {
+  [difficulty: string]: number;
+}
+
+// Interface for module customizations within a community
+export interface ICommunityModule {
+  moduleId: mongoose.Types.ObjectId; // Reference to Module document
+  moduleName: string;                // Name of the module (e.g., "Leetcode")
+  settings: object;                  // Any additional settings for the module
+  customizations: {                  // Customizations applied within this community
+    pointsScheme: PointsScheme;
+  };
+}
+
+// Interface for tracking member progress in modules
 interface IModuleProgress {
   moduleId: mongoose.Types.ObjectId;
   totalPoints: number;
   totalTime: number;
 }
 
-export interface PointsScheme {
-  [difficulty: string]: number;
-}
-
-export interface UpdateData {
-  customizations?: {
-      pointsScheme?: PointsScheme;
-  };
-}
-
+// Interface for community members
 interface IMember {
   _id: mongoose.Types.ObjectId;
   role: "admin" | "member";
@@ -25,22 +31,7 @@ interface IMember {
   moduleProgress: IModuleProgress[];
 }
 
-interface ICustomization {
-  moduleId: mongoose.Types.ObjectId;
-  pointsScheme: object;
-}
-
-// Array of modules in community
-export interface ICommunityModule {
-  moduleId: mongoose.Types.ObjectId;
-  moduleName: string;
-  settings: object;
-  customizations: {
-    pointsScheme: PointsScheme;
-};
-}
-
-// Define the main Community interface
+// Main Community interface after consolidation
 export interface ICommunity extends Document {
   name: string;
   slug: string;
@@ -48,14 +39,20 @@ export interface ICommunity extends Document {
   image: string;
   creator_ID: mongoose.Types.ObjectId;
   members: IMember[];
-  customization: ICustomization[];
-  modules: ICommunityModule[];
+  modules: ICommunityModule[]; // Contains both module references and customizations
   settings: object;
   createdAt: Date;
 }
 
+// Optional update structure for customizations, if needed for updating purposes
+export interface UpdateData {
+  customizations?: {
+    pointsScheme?: PointsScheme;
+  };
+}
+
 // Define the schema with optimized fields
-const CommunitySchema: Schema = new mongoose.Schema({
+const CommunitySchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String, unique: true },
   description: { type: String, default: "" },
@@ -89,34 +86,18 @@ const CommunitySchema: Schema = new mongoose.Schema({
       ],
     },
   ],
-  customization: [
-    {
-      moduleId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Module",
-        required: true,
-      },
-      pointsScheme: { type: Object, default: {} },
-    },
-  ],
   modules: [
     {
-      moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true },
-      moduleName: { type: String, required: true },  // Store the name of each module here
-      settings: { type: Object, default: {} },       // Default settings specific to each module
-      customizations: { type: Object, default: {} }  // Store module's points scheme or custom configurations
+      moduleId: { type: mongoose.Types.ObjectId, ref: "Module", required: true },
+      moduleName: { type: String, required: true },
+      settings: { type: Object, default: {} }, // For future use, maybe useful
+      customizations: {
+        pointsScheme: { type: Map, of: Number, default: {} },  // Allow flexible keys with numeric values
+      },
     },
   ],
   settings: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now },
-});
-
-// Post-delete hook to remove tasks associated with a community
-CommunitySchema.post('findOneAndDelete', async function (doc) {
-  if (doc) {
-    await Task.deleteMany({ communityId: doc._id });
-    console.log(`Deleted all tasks associated with community ${doc._id}`);
-  }
 });
 
 // Export model with the interface
