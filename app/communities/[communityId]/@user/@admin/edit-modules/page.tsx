@@ -28,19 +28,40 @@ interface ModuleCustomizations {
   };
 }
 
-interface ModuleData {
-  _id: string;
+interface Settings {}
+
+interface ModuleID {
+  moduleType: string;
   name: string;
-  customizations: ModuleCustomizations;
+  _id: string;
 }
 
-interface Module {
-  moduleId: ModuleData;
+interface ModuleData {
+  moduleId: ModuleID;
+  moduleName: string;
+  settings: Settings;
+  customizations: ModuleCustomizations;
+  _id: string;
 }
 
 interface ModuleDialogProps {
-  module: Module | null;
+  module: ModuleData | null;
+  refetch(): void;
 }
+
+// interface ModuleData {
+//   _id: string;
+//   name: string;
+//   customizations: ModuleCustomizations;
+// }
+
+// interface Module {
+//   moduleId: ModuleData;
+// }
+
+// interface ModuleDialogProps {
+//   module: Module | null;
+// }
 
 function ModuleDialog({ module, refetch }: ModuleDialogProps) {
   console.log("Module:", module);
@@ -231,7 +252,7 @@ export default function EditCommunityPage() {
   const { data, isLoading, isError, error, refetch } = useCommunityModules(
     communityData?._id as string
   );
-  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null);
   const [dialogIsOpen, setDialogIsOpen] = useState(false);
 
   if (isLoading) return <div>Loading</div>;
@@ -256,7 +277,7 @@ export default function EditCommunityPage() {
             <Separator className="my-4 mx-30" />
           </div>
           <div className="w-3/4 grid grid-cols-3 gap-4 m-2">
-            {dataArray.map((module: Module) => (
+            {dataArray.map((module: ModuleData) => (
               <Dialog
                 key={module.moduleId._id}
                 open={dialogIsOpen}

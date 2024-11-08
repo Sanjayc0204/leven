@@ -9,8 +9,7 @@ import {
 import { useCommunities } from "@/components/queries/fetchCommunities";
 import LargeCommunityCard from "@/components/ui/community-card-lg";
 import CommunityCardLargeSkeleton from "@/components/ui/community-card-lg-skeleton";
-import { Ghost, Plus } from "lucide-react";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default function Communities() {

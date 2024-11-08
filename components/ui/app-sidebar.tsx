@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboardIcon, SquarePen } from "lucide-react";
+import { History, LayoutDashboardIcon, SquarePen } from "lucide-react";
+import { boolean } from "zod";
 
 // Static Menu items outside the component
 const items = [
@@ -23,9 +24,6 @@ const items = [
   },
 ];
 
-const SIDEBAR_WIDTH = "16rem";
-const SIDEBAR_WIDTH_MOBILE = "18rem";
-
 interface AppSidebarProps {
   communityName: string;
   isAdmin: boolean;
@@ -33,22 +31,35 @@ interface AppSidebarProps {
 
 export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
   const pathname = usePathname();
-  const pathSegments = pathname.split("/").filter(Boolean);
+  const filteredPathname = pathname.split("/").filter(Boolean);
+  console.log(`${filteredPathname[0]}/${filteredPathname[1]}/dashboard`);
 
   // Determine relative dashboard URL
   const dashboardPath = pathname.includes("dashboard")
     ? pathname
-    : `${pathname}/dashboard`;
+    : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/dashboard`;
 
   const editCommunityPath = pathname.includes("edit-community")
     ? pathname
-    : `${pathname}/edit-modules`;
+    : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/edit-modules`;
+
+  const activityHistoryPath = pathname.includes("activity-history")
+    ? pathname
+    : `/${filteredPathname[0] || ""}/${
+        filteredPathname[1] || ""
+      }/activity-history`;
   // Dynamic menu items inside the component
   const dynamicItems = [
     {
       title: "Dashboard",
       url: dashboardPath, // Dynamically generate the dashboard path
       icon: LayoutDashboardIcon,
+    },
+
+    {
+      title: "Activity History",
+      url: activityHistoryPath, // Dynamically generate the dashboard path
+      icon: History,
     },
   ];
 
@@ -76,10 +87,10 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
                   <SidebarMenuItem key={item.title}>
                     <Link href={item.url}>
                       <SidebarMenuButton asChild>
-                        <a href={item.url}>
+                        <Link href={item.url}>
                           <item.icon />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>
