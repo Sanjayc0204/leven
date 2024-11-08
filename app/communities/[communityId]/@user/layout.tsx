@@ -1,56 +1,96 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
 import { useUserProfile } from "@/components/queries/fetchUserProfile";
-import { useSession } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { AppSidebar } from "@/components/ui/app-sidebar";
+import CommunityHeader from "@/components/ui/communities-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Icons } from "@/components/ui/icon";
 
-export default function Layout({
-  admin,
-  nonadmin,
-}: {
+interface LayoutProps {
   admin: React.ReactNode;
   nonadmin: React.ReactNode;
-}) {
+  children: React.ReactNode;
+}
+
+export default function Layout({ admin, nonadmin, children }: LayoutProps) {
   const pathname = usePathname();
   const communityId = pathname.split("/")[2];
   const session = useSession();
+
+  // Fetch community and user data
   const {
     data: communityData,
     isLoading: communityLoading,
     isError: communityError,
-    error: communityErrorDetails,
   } = useCommunityById(communityId, -1);
   const {
     data: userData,
     isLoading: userLoading,
     isError: userError,
-    error: userErrorDetails,
   } = useUserProfile(session.data?.user.email || "");
 
-  const communityInfo = useCommunityStore((state) => state.communityData);
-  const userInfo = useUserProfileStore((state) => state.userProfile);
-
+  // Retrieve and set community and user data in the store
   const setCommunityData = useCommunityStore((state) => state.setCommunityData);
   const setUserData = useUserProfileStore((state) => state.setUserProfile);
 
-  if (communityLoading || userLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (communityData && userData) {
-    setCommunityData(communityData);
-    setUserData(userData);
-    if (communityData?.creator_ID === userData?.data._id) {
-      console.log("You are an admin");
-    } else {
-      console.log("You are not an admin", communityData);
-      console.log(communityData?.creator_ID === userData.data._id);
+  useEffect(() => {
+    if (communityData) {
+      setCommunityData(communityData);
     }
+    if (userData) {
+      setUserData(userData);
+    }
+  }, [communityData, userData, setCommunityData, setUserData]);
 
+  // Loading and Error handling
+  if (communityLoading || userLoading) {
     return (
-      <>{communityData?.creator_ID === userData?.data._id ? admin : nonadmin}</>
+      <SidebarProvider>
+        <SidebarInset>
+          <div className="flex items-center justify-center h-screen">
+            <Icons.spinner className="h-16 w-16 animate-spin" />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
     );
   }
+
+  if (communityError || userError) {
+    return <div>Error loading data.</div>;
+  }
+
+  // Once data is available, set it in the store
+
+  const isAdmin = communityData?.creator_ID === userData?.data._id;
+
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "14rem",
+          "--sidebar-width-mobile": "20rem",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar
+        communityName={communityData?.name || "Community"}
+        isAdmin={isAdmin}
+      />
+      <SidebarInset>
+        <div className="sticky top-0 bg-white">
+          <CommunityHeader
+            onDataFetch={() => setCommunityData(communityData)}
+          />
+        </div>
+        {isAdmin ? admin : nonadmin}
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

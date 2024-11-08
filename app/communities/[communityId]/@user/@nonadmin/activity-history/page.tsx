@@ -152,7 +152,9 @@ function SummaryCard({ taskHistory }: SummaryCardProps) {
               Last Completed
             </p>
             <p className="text-2xl font-bold ">
-              {format(new Date(taskHistory[0].completedAt), "MMM d, yyyy")}
+              {taskHistory[0]
+                ? format(new Date(taskHistory[0].completedAt), "MMM d, yyyy")
+                : "NA"}
             </p>
           </div>
         </div>

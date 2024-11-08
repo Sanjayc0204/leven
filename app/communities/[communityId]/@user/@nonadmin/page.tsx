@@ -46,36 +46,15 @@ export default function CommunityPage({ params }: CommunityPageProps) {
   if (data) {
     return (
       <>
-        <SidebarProvider
-          style={
-            {
-              "--sidebar-width": "14rem",
-              "--sidebar-width-mobile": "20rem",
-            } as React.CSSProperties
-          }
-        >
-          <AppSidebar communityName={data.name} isAdmin={false} />
-          <SidebarInset>
-            <div className="sticky top-0 bg-white">
-              <CommunityHeader
-                onDataFetch={() => setTrigger((prev) => prev + 1)}
-              />
+        <div className="p-4 bg-slate-100 h-screen">
+          <div className="flex">
+            {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
+            <div className="pl-4">
+              <LeetcodeRubric />
+              {/* <DailyQuests /> */}
             </div>
-            <div className="p-4 bg-slate-100 h-screen">
-              <div className="flex">
-                {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
-                <div className="pl-4">
-                  <LeetcodeRubric />
-                  {/* <DailyQuests /> */}
-                </div>
-              </div>
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
-
-        {/* <div className="p-4 text-sm">
-          <CustomTrigger />
-          </div> */}
+          </div>
+        </div>
       </>
     );
   }
