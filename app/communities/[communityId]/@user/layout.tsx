@@ -29,7 +29,8 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
   useEffect(() => {
     setShouldRenderSlots(
       !pathname.includes("/dashboard") &&
-        !pathname.includes("/activity-history")
+        !pathname.includes("/activity-history") &&
+        !pathname.includes("/user")
     );
   }, [pathname]);
 

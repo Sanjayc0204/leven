@@ -1,37 +1,43 @@
-import { Button } from "@/components/ui/button";
-import CommunitySidebar from "@/components/ui/communities-sidebar";
-import DailyQuests from "@/components/ui/daily-quests";
-import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
-import NavBar from "@/components/ui/navbar";
+"use client";
 
-export default function PlaygroundPage() {
-  // return (
-  //   // <>
-  //   //   <LeetcodeRubric /> lkjlkj
-  //   // </>
-  // );
-  // return (
-  //   <div className="relative h-screen w-screen">
-  //     {/* Move the NavBar outside of the blur stacking context */}
-  //     <div className="fixed top-0 left-0 w-full z-30">
-  //       <NavBar />
-  //     </div>
-  //     {/* Background Blur */}
-  //     <div className="absolute inset-0 backdrop-blur-sm bg-white/30 z-10"></div>
-  //     <NavBar></NavBar>
-  //     {/* The actual page content (behind the blur) */}
-  //     <div className="relative z-0">
-  //       {/* Content that will be blurred */}
-  //       <div className="p-8">
-  //         <h1 className="text-6xl font-bold">Welcome to the Community</h1>
-  //         <p className="mt-4 text-xl">Content behind the blur</p>
-  //       </div>
-  //     </div>
-  //     {/* Login Button centered on top of the blur */}
-  //     <div className="absolute inset-0 flex items-center justify-center z-20">
-  //       <Button className="text-lg font-bold px-6 py-3">Log In</Button>
-  //     </div>
-  //   </div>
-  // );
-  // return <ProgressiveStepper />;
+import { useState, useEffect } from "react";
+import { Flame } from "lucide-react";
+
+interface StreakBadgeProps {
+  streak: number;
+  maxStreak?: number;
+}
+
+export default function Component(
+  { streak, maxStreak = 30 }: StreakBadgeProps = { streak: 5 }
+) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  const getGradient = (streak: number, max: number) => {
+    const percentage = Math.min((streak / max) * 100, 100);
+    return `linear-gradient(135deg, #ff4e50 0%, #f9d423 ${percentage}%, #f9d423 100%)`;
+  };
+
+  return (
+    <div
+      className={`inline-flex items-center space-x-2 rounded-full px-3 py-1 text-sm font-semibold transition-all duration-300 ease-in-out ${
+        isVisible
+          ? "opacity-100 transform translate-y-0"
+          : "opacity-0 transform -translate-y-4"
+      }`}
+      style={{
+        background: getGradient(streak, maxStreak),
+        boxShadow: "0 4px 6px rgba(255, 78, 80, 0.25)",
+      }}
+      role="status"
+      aria-live="polite"
+    >
+      <Flame className="h-5 w-5 animate-pulse text-white" />
+      <span className="text-white">{streak} Day Streak</span>
+    </div>
+  );
 }

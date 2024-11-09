@@ -18,6 +18,7 @@ import { AvatarIcon } from "./navbar";
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function CommunityHeader({
   onDataFetch,
@@ -132,7 +133,9 @@ export default function CommunityHeader({
                   <BreadcrumbPage>{segment}</BreadcrumbPage>
                 ) : (
                   <>
-                    <BreadcrumbLink href={href}>{segment}</BreadcrumbLink>
+                    <BreadcrumbLink asChild>
+                      <Link href={href}>{segment}</Link>
+                    </BreadcrumbLink>
                     <BreadcrumbSeparator />
                   </>
                 )}

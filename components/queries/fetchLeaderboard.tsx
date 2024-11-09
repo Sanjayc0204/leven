@@ -9,7 +9,6 @@ const fetchLeaderboard = async (communityId = "") => {
 };
 
 export const useLeaderboard = (communityId = "") => {
-  console.log("Backend baby", communityId);
   return useQuery({
     queryKey: ["leaderboard", communityId],
     queryFn: () => fetchLeaderboard(communityId),

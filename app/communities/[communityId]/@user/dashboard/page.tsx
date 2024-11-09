@@ -30,7 +30,6 @@ export default function DashboardPage({ params }: CommunityPageProps) {
     if (data) {
       setCommunity(data);
       setDataReady(true);
-      console.log("Setting data!");
     }
   }, [data, setCommunity]);
 
