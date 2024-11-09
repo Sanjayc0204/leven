@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";   
 import { Types } from 'mongoose';
 import { calculatePoints, recordTask, batchUpdateModules} from '@/services/taskService';
+import { updateStreak } from "@/services/streakService";
 import { findUserByIdOrEmail } from '@/util/userUtils/getUserIdFromIdentifier';
 import { connectToDB } from '@/util/connectToDB';
 
@@ -43,21 +44,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
       const communityObjectId = new Types.ObjectId(communityId);
 
-      // Calculate points based on difficulty in metadata
+      // Step 1: Calculate base points based on difficulty in metadata
       const difficulty = typedMetadata.find((tag: string) => ["easy", "medium", "hard"].includes(tag));
-      const points = difficulty ? await calculatePoints(communityObjectId, moduleObjectId, difficulty) : 0;
+      const basePoints = difficulty ? await calculatePoints(communityObjectId, moduleObjectId, difficulty) : 0;
 
-      // Prepare and record task for a single community
+      // Step 2: Apply streak multiplier if applicable and get final points
+      const finalPoints = await updateStreak(communityObjectId, user._id, basePoints);
+
+      // Step 3: Prepare task data with final points and record the task
       const taskData = {
          userId: user._id,
          communityId: communityObjectId,
          moduleId: moduleObjectId,
          description,
-         points,
+         points: finalPoints, // Use streak-adjusted points
          metadata: typedMetadata,
       };
 
       const taskResult = await recordTask(taskData);
+
       return new NextResponse(JSON.stringify(taskResult), { status: 201 });
    } catch (error) {
       const err = error as Error;

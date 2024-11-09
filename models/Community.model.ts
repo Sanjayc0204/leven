@@ -5,6 +5,21 @@ export interface PointsScheme {
   [difficulty: string]: number;
 }
 
+interface ICommunitySettings {
+  streaks: {
+    streakThreshold: number;       // Minimum consecutive days to apply multiplier, 1 means no bonus
+    multiplier: number;            // Multiplier for streak bonus, default 1 (no bonus)
+  };
+  privacy?: {
+    isPrivate: boolean;            // Whether the community is private
+    inviteLink?: string;           // Unique invite link for private access
+    inviteExpiration?: Date;       // Expiration date for invite link
+  };
+  leaderboard?: {
+    showStreaks: boolean;          // Show streaks on leaderboard
+  };
+}
+
 // Interface for module customizations within a community
 export interface ICommunityModule {
   moduleId: mongoose.Types.ObjectId; // Reference to Module document
@@ -27,8 +42,12 @@ interface IMember {
   _id: mongoose.Types.ObjectId;
   role: "admin" | "member";
   points: number;
+  previousRank: number;
+  currentStreak: number;           // Current streak of consecutive days
+  longestStreak: number;           // Longest streak record
   moduleProgress: IModuleProgress[];
 }
+
 
 // Main Community interface after consolidation
 export interface ICommunity extends Document {
@@ -39,7 +58,7 @@ export interface ICommunity extends Document {
   creator_ID: mongoose.Types.ObjectId;
   members: IMember[];
   modules: ICommunityModule[]; // Contains both module references and customizations
-  settings: object;
+  settings: ICommunitySettings;
   createdAt: Date;
 }
 
@@ -73,22 +92,41 @@ const CommunitySchema = new mongoose.Schema({
           totalTime: { type: Number, default: 0 },
         },
       ],
+      // New fields for tracking streaks
+      currentStreak: { type: Number, default: 0 },  // Number of consecutive tasks or days
+      longestStreak: { type: Number, default: 0 },  // Highest streak achieved
+      previousRank: { type: Number, default: 0 },
+      
     },
   ],
   modules: [
     {
       moduleId: { type: mongoose.Types.ObjectId, ref: "Module", required: true },
       moduleName: { type: String, required: true },
-      settings: { type: Object, default: {} }, // Placeholder for future use
+      settings: { type: Object, default: {} },
       customizations: {
         pointsScheme: {
-          type: Object, // Store as a regular object
-          default: {},  // Default to an empty object if not specified
+          type: Object,
+          default: {},
         },
       },
     },
   ],
-  settings: { type: Object, default: {} },
+  settings: {
+    streaks: {
+      streakThreshold: { type: Number, default: 1 },  // Minimum days/tasks for streak bonus
+      multiplier: { type: Number, default: 1 },  // Multiplier for streak bonus, default 1
+    },
+    privacy: {
+      isPrivate: { type: Boolean, default: false },
+      inviteLink: { type: String, default: null },
+      inviteExpiration: { type: Date, default: null },
+    },
+    leaderboard: {
+      enabled: { type: Boolean, default: true },
+      showStreaks: { type: Boolean, default: true },
+    },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

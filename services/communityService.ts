@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 import User from "@/models/User.model";
 import Community, {ICommunity,ICommunityModule, PointsScheme} from "@/models/Community.model";
-import Module, { IModule } from "@/models/Module.model";
+import Module from "@/models/Module.model";
 import { connectToDB } from "@/util/connectToDB";
 import { generateSlug } from "@/util/communityUtils/generateSlug";
 import { findCommunityIdOrSlug } from "@/util/communityUtils/findCommunityIdOrSlug";
@@ -37,8 +37,9 @@ export async function fetchAllCommunities(
       name: { $regex: searchQuery, $options: "i" },
     });
   } else {
-    // Return top 10 communities
-    communities = await Community.find({}).limit(10);
+    // Return all communities
+    communities = await Community.find({});
+    //communities = await Community.find({}).limit(10)
   }
   console.log(communities);
   return communities;
@@ -65,6 +66,7 @@ export async function createCommunity(
   const slug = generateSlug(name);
 
   // Step 1: Create the community document with basic fields
+  // Note Schema will always take precedence so even if you don't fill these, schema automatically automatically fills t.
   const community = new Community({
     name,
     slug,
@@ -80,7 +82,18 @@ export async function createCommunity(
       },
     ],
     customization: [],
-    settings: {},
+    settings: {
+      streaks: {
+        streakThreshold: 1,
+        multiplier: 1,
+      },
+      privacy: {
+        isPrivate: false,
+      },
+      leaderboard: {
+        showStreaks: true,
+      },
+    },
     createdAt: new Date(),
   });
 
@@ -393,9 +406,12 @@ export async function joinCommunity(
   // Add the user to the community's members list
   community.members.push({
     _id: userId,
-    role: "member", // New members typically have a 'member' role by default
-    points: 0,
-    moduleProgress: [], // Initialize module progress as an empty array
+    role: "member",            // Default role
+    points: 0,                  // Initial points
+    moduleProgress: [],         // Empty module progress array
+    currentStreak: 0,           // Initial streak count
+    longestStreak: 0,           // Initial longest streak
+    previousRank:0
   });
 
   await community.save(); // Save the updated community
@@ -581,10 +597,11 @@ export async function changeMemberRole(
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @returns {Promise<Array<{ userId: string; username: string; image: string; totalPoints: number }>>} - Leaderboard sorted by general points.
+ * 
  */
 export async function getLeaderboardByCommunityId(
   communityId: Types.ObjectId
-): Promise<Array<{ userId: string; username: string; image: string; totalPoints: number }>> {
+): Promise<Array<{ userId: string; username: string; image: string; totalPoints: number; previousRank: number; currentStreak?: number }>> {
   await connectToDB();
 
   // Fetch the community and populate members with user details
@@ -603,7 +620,7 @@ export async function getLeaderboardByCommunityId(
   }
 
   // Filter and map members for leaderboard
-  const leaderboard = community.members
+  let leaderboard = community.members
     .filter((member) => {
       const validMember = member._id !== null && typeof member.points === 'number';
       if (!validMember) console.log(`Skipping member with ID: ${member._id} - Points not defined`);
@@ -616,10 +633,10 @@ export async function getLeaderboardByCommunityId(
         username: populatedMember.username,
         image: populatedMember.image || '',
         totalPoints: member.points,
+        previousRank: member.previousRank || 0, // Retain previous rank for leaderboard comparison
+        currentStreak: member.currentStreak || 0, // Optional; front end can control display
       };
     });
-
-  console.log("Unsorted leaderboard data:", leaderboard);
 
   // Sort by total points in descending order
   leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
@@ -628,6 +645,7 @@ export async function getLeaderboardByCommunityId(
   
   return leaderboard;
 }
+
 
 
 
