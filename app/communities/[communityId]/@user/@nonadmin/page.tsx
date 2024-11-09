@@ -3,17 +3,13 @@
 import { useCommunityStore } from "@/app/store/communityStore";
 // import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
-// import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
-import { AppSidebar } from "@/components/ui/app-sidebar";
-import CommunityHeader from "@/components/ui/communities-header";
 import DailyQuests from "@/components/ui/daily-quests";
+// import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
 // import DailyQuests from "@/components/ui/daily-quests";
-import { Icons } from "@/components/ui/icon";
 // import Leaderboard from "@/components/ui/leaderboard";
 import LeaderboardAlt from "@/components/ui/leaderboard-alt";
 import LeaderboardSkeleton from "@/components/ui/leaderboard-skeleton";
 import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 
 interface CommunityPageProps {
@@ -50,8 +46,8 @@ export default function CommunityPage({ params }: CommunityPageProps) {
           <div className="flex">
             {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
             <div className="pl-4">
-              <LeetcodeRubric />
-              {/* <DailyQuests /> */}
+              {/* <LeetcodeRubric /> */}
+              <DailyQuests />
             </div>
           </div>
         </div>

@@ -56,9 +56,9 @@ interface ActivityTableProps {
 }
 
 const difficultyMap = new Map([
-  ["easy", "green-500"],
-  ["medium", "yellow-500"],
-  ["hard", "red-500"],
+  ["easy", "bg-green-500"],
+  ["medium", "bg-yellow-500"],
+  ["hard", "bg-red-500"],
 ]);
 
 function ActivityTable({ currentTasks }: ActivityTableProps) {

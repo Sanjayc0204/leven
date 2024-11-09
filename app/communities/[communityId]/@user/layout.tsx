@@ -11,6 +11,7 @@ import { AppSidebar } from "@/components/ui/app-sidebar";
 import CommunityHeader from "@/components/ui/communities-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Icons } from "@/components/ui/icon";
+import { ICommunity } from "@/models/Community.model";
 
 interface LayoutProps {
   admin: React.ReactNode;
@@ -22,6 +23,15 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
   const pathname = usePathname();
   const communityId = pathname.split("/")[2];
   const session = useSession();
+
+  const [shouldRenderSlots, setShouldRenderSlots] = useState(true);
+
+  useEffect(() => {
+    setShouldRenderSlots(
+      !pathname.includes("/dashboard") &&
+        !pathname.includes("/activity-history")
+    );
+  }, [pathname]);
 
   // Fetch community and user data
   const {
@@ -65,8 +75,6 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
     return <div>Error loading data.</div>;
   }
 
-  // Once data is available, set it in the store
-
   const isAdmin = communityData?.creator_ID === userData?.data._id;
 
   return (
@@ -85,11 +93,11 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
       <SidebarInset>
         <div className="sticky top-0 bg-white">
           <CommunityHeader
-            onDataFetch={() => setCommunityData(communityData)}
+            onDataFetch={() => setCommunityData(communityData as ICommunity)}
           />
         </div>
-        {isAdmin ? admin : nonadmin}
-        {children}
+        {shouldRenderSlots ? (isAdmin ? admin : nonadmin) : null}
+        {!shouldRenderSlots ? children : null}
       </SidebarInset>
     </SidebarProvider>
   );

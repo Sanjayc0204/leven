@@ -1,5 +1,6 @@
 "use client";
 
+import DailyQuests from "@/components/ui/daily-quests";
 // import { useUserProfileStore } from "@/app/store/userProfileStore";
 // import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
 // import DailyQuests from "@/components/ui/daily-quests";
