@@ -20,6 +20,7 @@ import {
 import { useLeaderboard } from "../queries/fetchLeaderboard";
 import LeaderboardSkeleton from "./leaderboard-skeleton";
 import { useCommunityStore } from "@/app/store/communityStore";
+import { useEffect } from "react";
 
 interface LeaderboardUser {
   userId: string;
@@ -36,9 +37,14 @@ const rankColors: { [key: number]: string } = {
 
 function LeaderboardCard() {
   const { communityData } = useCommunityStore();
-  const { isLoading, isError, data, error } = useLeaderboard(
+  const { isLoading, isError, data, error, refetch } = useLeaderboard(
     communityData?._id as string
   );
+  const toggleJoin = useCommunityStore((state) => state.toggleJoin);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch, toggleJoin]);
 
   if (isLoading) {
     return <LeaderboardSkeleton />;

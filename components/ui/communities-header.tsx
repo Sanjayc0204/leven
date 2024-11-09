@@ -32,6 +32,8 @@ export default function CommunityHeader({
   const [isLoading, setIsLoading] = React.useState(false);
 
   const currentCommunity = useCommunityStore((state) => state.communityData);
+  const setToggleJoin = useCommunityStore((state) => state.setToggleJoin);
+  const toggleJoin = useCommunityStore((state) => state.toggleJoin);
   const currentCommunityID = currentCommunity?._id as string;
   const userCommunities =
     useUserProfileStore((state) => state.userCommunities) ?? [];
@@ -44,12 +46,13 @@ export default function CommunityHeader({
   async function handleLeave() {
     setIsLoading(true);
     try {
+      console.log("userprofile", userProfile?.data._id);
       const response = await fetch(
         `/api/communities/${currentCommunityID}/leave`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: `${userProfile?._id}` }),
+          body: JSON.stringify({ userId: `${userProfile?.data._id}` }),
         }
       );
 
@@ -62,6 +65,7 @@ export default function CommunityHeader({
           userCommunities?.filter((_id) => _id !== currentCommunityID)
         );
         onDataFetch();
+        setToggleJoin(!toggleJoin);
         toast({
           title: "Success",
           description: "You have left the community.",
@@ -87,7 +91,7 @@ export default function CommunityHeader({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: `${userProfile?._id}` }),
+          body: JSON.stringify({ userId: `${userProfile?.data._id}` }),
         }
       );
 
@@ -98,6 +102,7 @@ export default function CommunityHeader({
       } else {
         setUserCommunities([...userCommunities, currentCommunityID]);
         onDataFetch();
+        setToggleJoin(!toggleJoin);
         toast({
           title: "Success",
           description: "You have joined the community.",
