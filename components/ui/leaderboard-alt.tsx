@@ -175,7 +175,7 @@ function LeaderboardCard() {
 
   if (data) {
     const leaderboardArray: LeaderboardUser[] = data.data;
-    console.log("loder", leaderboardArray);
+    console.log("Chairman Mao", leaderboardArray);
     return (
       <Card className="w-[500px] h-[400px]">
         <CardHeader>

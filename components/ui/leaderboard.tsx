@@ -119,6 +119,7 @@ function LeaderboardCard() {
   }
   if (data) {
     const leaderboardArray: LeaderboardUser[] = data.data;
+
     return (
       <Card className="w-[500px] h-[400px]">
         <div className="">
