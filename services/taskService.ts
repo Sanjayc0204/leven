@@ -1,4 +1,5 @@
 import Task, { ITask, TaskData } from '@/models/Task.model';
+import User from '@/models/User.model';
 import Community from '@/models/Community.model';
 import { Types } from 'mongoose';
 import { updateModuleScore } from '@/services/communityService';
@@ -117,6 +118,29 @@ export async function batchUpdateModules(
   }
   
 
+ /**
+ * Fetches tasks associated with a community, including usernames for each task.
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @returns {Promise<Array>} - Array of tasks with usernames populated.
+ */
+export async function fetchCommunityTasks(communityId: Types.ObjectId) {
+    // Ensure valid community ID
+    if (!Types.ObjectId.isValid(communityId)) {
+        throw new Error("Invalid community ID");
+    }
+
+    // Query tasks by communityId and populate the userId to get the username
+    const tasks = await Task.find({ communityId })
+        .populate({
+            path: 'userId',
+            select: 'username', // Only include the username field from User
+            model: User, // Explicitly specify the User model
+        })
+        .sort({ completedAt: -1 }); // Sort by most recent first
+
+    return tasks;
+}
 
 /**
  * Fetch tasks for a user based on filters.
