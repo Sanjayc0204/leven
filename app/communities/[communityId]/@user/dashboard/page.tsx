@@ -1,30 +1,34 @@
 "use client";
-
-import { useCommunityStore } from "@/app/store/communityStore";
-// import { useUserProfileStore } from "@/app/store/userProfileStore";
-import { useCommunityById } from "@/components/queries/fetchCommunityById";
-import DailyQuests from "@/components/ui/daily-quests";
-// import { useLeaderboard } from "@/components/queries/fetchLeaderboard";
-// import DailyQuests from "@/components/ui/daily-quests";
-// import Leaderboard from "@/components/ui/leaderboard";
-import LeaderboardAlt from "@/components/ui/leaderboard-alt";
-import LeaderboardSkeleton from "@/components/ui/leaderboard-skeleton";
-import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
 import { useEffect, useState } from "react";
+import { useCommunityStore } from "@/app/store/communityStore";
+import { useCommunityById } from "@/components/queries/fetchCommunityById";
+import LeaderboardAlt from "@/components/ui/leaderboard-alt";
+import LeetcodeRubric from "@/components/ui/leetcode-components/leetcode-rubric";
+import RecentActivity from "@/components/ui/recent-activity";
+import DailyQuests from "@/components/ui/daily-quests";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+
+import { Responsive, WidthProvider } from "react-grid-layout";
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface CommunityPageProps {
   params: { communityId: string };
 }
 
+const dashboardComponents = [
+  { id: "a", component: <LeaderboardAlt /> },
+  { id: "b", component: <LeetcodeRubric /> },
+  { id: "c", component: <DailyQuests /> },
+  { id: "d", component: <RecentActivity /> },
+];
+
 export default function DashboardPage({ params }: CommunityPageProps) {
   const { communityId } = params;
   const setCommunity = useCommunityStore((state) => state.setCommunityData);
   const [isDataReady, setDataReady] = useState(false);
-  const [trigger, setTrigger] = useState(-1);
-  const { isLoading, isError, data, error } = useCommunityById(
-    communityId,
-    trigger
-  );
+  const { isLoading, isError, data, error } = useCommunityById(communityId, -1);
 
   useEffect(() => {
     if (data) {
@@ -34,31 +38,39 @@ export default function DashboardPage({ params }: CommunityPageProps) {
   }, [data, setCommunity]);
 
   if (isError) {
-    return <div>Error! {error.message}</div>;
-  }
-  if (data) {
-    return (
-      <>
-        <div className="p-4 bg-slate-100 h-screen">
-          <div className="flex">
-            {isDataReady ? <LeaderboardAlt /> : <LeaderboardSkeleton />}
-            <div className="pl-4">
-              <LeetcodeRubric />
-              {/* <DailyQuests /> */}
-            </div>
-          </div>
-        </div>
-      </>
-    );
+    return <div className="p-4 text-red-500">Error! {error.message}</div>;
   }
 
+  if (isLoading) {
+    return <div className="p-4">Loading...</div>;
+  }
+
+  const layouts = {
+    lg: [
+      { i: "a", x: 0, y: 0, w: 2.0, h: 3, minw: 2.0, minh: 3 },
+      { i: "b", x: 2, y: 0, w: 2.5, h: 1.4 },
+      { i: "c", x: 2, y: 1.4, w: 2.5, h: 2.75 },
+      { i: "d", x: 0, y: 3, w: 2, h: 1.5 },
+    ],
+  };
+
+  const ResponsiveGridLayout = WidthProvider(Responsive);
+
   return (
-    <div className="flex h-screen">
-      <div className="flex-1 overflow-auto">
-        <main className="p-4">
-          <h1 className="text-2xl font-bold mb-4"></h1>
-        </main>
-      </div>
+    <div className="bg-slate-200 z-0">
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={layouts}
+        breakpoints={{ lg: 1200 }}
+        cols={{ lg: 4.5 }}
+        draggableHandle=".drag-handle"
+      >
+        {dashboardComponents.map(({ id, component }) => (
+          <div key={id} className="p-0 z-0">
+            {component}
+          </div>
+        ))}
+      </ResponsiveGridLayout>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { useCommunityModules } from "@/components/queries/fetchCommunityModules"
 import { useCommunityStore } from "@/app/store/communityStore";
 import LoadingSpinner from "../loading-spinner";
 import { useEffect, useState } from "react";
+import { GripHorizontal } from "lucide-react";
 
 interface settingsSchema {
   toImplement: null;
@@ -72,7 +73,18 @@ export default function LeetcodeRubric() {
 
   if (data) {
     return (
-      <Card className="w-full max-w-sm">
+      <Card className="w-full box-border min-w-fit">
+        <div
+          className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-move drag-handle bg-gray-200 rounded-lg px-1"
+          aria-label="Drag handle"
+          role="button"
+          tabIndex={0}
+        >
+          <GripHorizontal
+            className="text-gray-400 hover:text-gray-600"
+            size={18}
+          />
+        </div>
         <CardHeader>
           <CardTitle className="text-lg">LeetCode Points</CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
