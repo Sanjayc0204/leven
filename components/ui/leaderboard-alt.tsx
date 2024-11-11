@@ -22,16 +22,8 @@ import LeaderboardSkeleton from "./leaderboard-skeleton";
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  ArrowDown,
-  ArrowUp,
-  Flame,
-  Minus,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Flame, GripHorizontal, Minus } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -48,30 +40,20 @@ interface LeaderboardUser {
   image: string;
 }
 
-const rankColors: { [key: number]: string } = {
-  1: "",
-  2: "",
-  3: "",
-};
-
 function StreakDisplay({ streak }: { streak: number }) {
   if (streak <= 0) return null;
-
-  // Define dynamic classes and messages based on streak value
   const bgColor =
     streak >= 10
       ? "bg-red-200 dark:bg-red-800"
       : streak >= 5
       ? "bg-orange-200 dark:bg-orange-800"
       : "bg-red-100 dark:bg-red-900";
-
   const flameColor =
     streak >= 10
       ? "text-red-700"
       : streak >= 5
       ? "text-orange-600"
       : "text-red-500";
-
   return (
     <div
       className={`inline-flex items-center gap-1 ${bgColor} rounded-lg px-1.5 py-0.5`}
@@ -84,16 +66,16 @@ function StreakDisplay({ streak }: { streak: number }) {
   );
 }
 
-interface UserRankProps {
+function UserRank({
+  currentRank,
+  previousRank,
+}: {
   currentRank: number;
   previousRank: number;
-}
-
-function UserRank({ currentRank, previousRank }: UserRankProps) {
+}) {
   const rankDifference = previousRank - currentRank;
   let content;
   let tooltipContent;
-
   if (rankDifference > 0) {
     content = (
       <Badge
@@ -166,26 +148,42 @@ function LeaderboardCard() {
 
   if (isError) {
     return (
-      <Card className="w-[500px] h-[400px]">
+      <Card className="w-full h-full box-border">
         <CardHeader>Error!</CardHeader>
         <CardDescription>{error.message}</CardDescription>
       </Card>
     );
   }
 
+  const breakpointColumnsObj = {
+    default: 3,
+    1100: 3,
+    700: 1,
+  };
+
   if (data) {
     const leaderboardArray: LeaderboardUser[] = data.data;
-    console.log("Chairman Mao", leaderboardArray);
     return (
-      <Card className="w-[500px] h-[400px]">
-        <CardHeader>
+      <Card className="min-w-fit w-full box-border h-full">
+        <div
+          className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-move drag-handle bg-gray-200 rounded-lg px-1"
+          aria-label="Drag handle"
+          role="button"
+          tabIndex={0}
+        >
+          <GripHorizontal
+            className="text-gray-400 hover:text-gray-600"
+            size={18}
+          />
+        </div>
+        <CardHeader className="">
           <CardTitle className="text-2xl">Leaderboard</CardTitle>
           <CardDescription className="font-normal text-muted-foreground text-sm">
             Rise to the top and compete to be the best
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-y-auto h-64">
+          <div className="overflow-y-auto max-h-64 min-w-min w-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -196,47 +194,43 @@ function LeaderboardCard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaderboardArray.map(
-                  (user: LeaderboardUser, index: number) => (
-                    <TableRow
-                      key={user.userId}
-                      className={`${
-                        rankColors[index + 1] || ""
-                      } hover:bg-accent cursor-pointer`}
-                      onClick={() => router.push(userProfilePath + user.userId)}
-                    >
-                      <TableCell className="font-medium text-center">
-                        {index + 1}
-                      </TableCell>
-                      <TableCell>
+                {leaderboardArray.map((user, index) => (
+                  <TableRow
+                    key={user.userId}
+                    className="hover:bg-accent cursor-pointer"
+                    onClick={() => router.push(userProfilePath + user.userId)}
+                  >
+                    <TableCell className="font-medium text-center">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.image} alt={user.username} />
+                          <AvatarFallback>
+                            {user.username
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.image} alt={user.username} />
-                            <AvatarFallback>
-                              {user.username
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{user.username}</span>
-                            <StreakDisplay streak={user.currentStreak} />
-                          </div>
+                          <span className="font-medium">{user.username}</span>
+                          <StreakDisplay streak={user.currentStreak} />
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {user.totalPoints.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <UserRank
-                          currentRank={index + 1}
-                          previousRank={user.previousRank}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )
-                )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {user.totalPoints.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <UserRank
+                        currentRank={index + 1}
+                        previousRank={user.previousRank}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>

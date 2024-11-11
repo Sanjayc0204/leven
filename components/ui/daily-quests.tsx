@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, Clock, Star } from "lucide-react"; // Removed Zap
+import { Check, Clock, GripHorizontal, Star } from "lucide-react"; // Removed Zap
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,8 +65,18 @@ export default function DailyQuests() {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      {" "}
+    <Card className="min-w-fit w-full h-fit box-border">
+      <div
+        className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-move drag-handle bg-gray-200 rounded-lg px-1"
+        aria-label="Drag handle"
+        role="button"
+        tabIndex={0}
+      >
+        <GripHorizontal
+          className="text-gray-400 hover:text-gray-600"
+          size={18}
+        />
+      </div>{" "}
       {/* Reduced the width */}
       <CardHeader className="p-3">
         {" "}

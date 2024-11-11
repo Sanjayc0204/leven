@@ -18,7 +18,7 @@ import { boolean } from "zod";
 // Static Menu items outside the component
 const items = [
   {
-    title: "Communities",
+    title: "All Communities",
     url: "/communities",
     icon: UserGroupIcon,
   },
