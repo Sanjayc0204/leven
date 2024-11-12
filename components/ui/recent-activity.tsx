@@ -1,6 +1,7 @@
+"use client";
+
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
-import { useTasksByUserId } from "../queries/fetchTasksByUserId";
 import LoadingSpinner from "./loading-spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { ScrollArea } from "./scroll-area";
@@ -11,8 +12,11 @@ import {
   GripHorizontal,
   MessageSquare,
   Trophy,
+  Clock,
 } from "lucide-react";
 import { Badge } from "./badge";
+import { formatDistanceToNow } from "date-fns";
+import { useTasksByCommunityId } from "../queries/fetchTasksByCommunity";
 
 type ActivityItem = {
   _id: string;
@@ -26,8 +30,7 @@ type ActivityItem = {
 export default function RecentActivity() {
   const userId = useUserProfileStore((state) => state.userProfile)?.data._id;
   const communityId = useCommunityStore((state) => state.communityData)?._id;
-  const { data, isLoading, isError, error } = useTasksByUserId(
-    userId,
+  const { data, isLoading, isError, error } = useTasksByCommunityId(
     communityId as string
   );
 
@@ -46,8 +49,12 @@ export default function RecentActivity() {
     }
   };
 
+  const getTimeDifference = (completedAt: string) => {
+    const a = formatDistanceToNow(new Date(completedAt), { addSuffix: true });
+    return a;
+  };
+
   if (isLoading) {
-    console.log("Hoi");
     return <LoadingSpinner />;
   }
 
@@ -57,9 +64,9 @@ export default function RecentActivity() {
   }
 
   if (data) {
-    const activities = data;
+    const activities = data.data;
     return (
-      <Card className=" min-w-fit w-full h-full box-border">
+      <Card className="w-full h-full flex flex-col overflow-hidden">
         <div
           className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 cursor-move drag-handle bg-gray-200 rounded-lg px-1"
           aria-label="Drag handle"
@@ -74,8 +81,8 @@ export default function RecentActivity() {
         <CardHeader>
           <CardTitle className="text-xl">Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="min-h-fit h-full pr-4">
+        <CardContent className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full pr-4">
             <div className="space-y-4">
               {activities.map((activity, index) => (
                 <div
@@ -84,9 +91,16 @@ export default function RecentActivity() {
                     index !== activities.length - 1 ? "mb-4" : ""
                   }`}
                 >
-                  <p className="text-sm font-medium">
-                    {activity.user} just earned {activity.points} points!
-                  </p>
+                  <div className="flex justify-between items-start">
+                    <p className="text-sm font-medium">
+                      <b>{activity.userId.username}</b> just earned{" "}
+                      <b>{activity.points} points!</b>
+                    </p>
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {getTimeDifference(activity.completedAt)}
+                    </div>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {activity.description}
                   </p>

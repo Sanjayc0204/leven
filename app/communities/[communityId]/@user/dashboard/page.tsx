@@ -10,6 +10,7 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 import { Responsive, WidthProvider } from "react-grid-layout";
+import { DashboardChart } from "@/components/ui/dashboard-chart";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -22,6 +23,7 @@ const dashboardComponents = [
   { id: "b", component: <LeetcodeRubric /> },
   { id: "c", component: <DailyQuests /> },
   { id: "d", component: <RecentActivity /> },
+  { id: "e", component: <DashboardChart /> },
 ];
 
 export default function DashboardPage({ params }: CommunityPageProps) {
@@ -47,10 +49,11 @@ export default function DashboardPage({ params }: CommunityPageProps) {
 
   const layouts = {
     lg: [
-      { i: "a", x: 0, y: 0, w: 2.0, h: 3, minw: 2.0, minh: 3 },
-      { i: "b", x: 2, y: 0, w: 2.5, h: 1.4 },
+      { i: "a", x: 0, y: 0, w: 2.0, h: 3, minW: 2.0, minH: 3 },
+      { i: "b", x: 2, y: 0, w: 2.5, h: 1.4, maxH: 1.4, minH: 1.4 },
       { i: "c", x: 2, y: 1.4, w: 2.5, h: 2.75 },
-      { i: "d", x: 0, y: 3, w: 2, h: 1.5 },
+      { i: "d", x: 0, y: 3, w: 2, h: 1.5, maxH: 1.5 },
+      { i: "e", x: 0, y: 4.5, w: 4.5, h: 2.5, maxH: 1.5 },
     ],
   };
 
