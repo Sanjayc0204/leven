@@ -106,7 +106,7 @@ export async function getUserProfileByEmail(email: string): Promise<IUser | null
 
 
 
-
+import Module from '@/models/Module.model'; // Adjust the path to your Module schema
 
 interface PopulatedModule {
   _id: Types.ObjectId;
@@ -125,13 +125,6 @@ interface CommunityWithPopulatedModules {
   }[];
 }
 
-/**
- * Fetches all unique modules associated with the communities a user is part of.
- *
- * @param {Types.ObjectId} userId - The ID of the user.
- * @returns {Promise<Array<any>>} - An array of unique modules with optional community info.
- * 
- */
 export async function getUserModules(userId: Types.ObjectId): Promise<any[]> {
   await connectToDB();
 
@@ -140,6 +133,7 @@ export async function getUserModules(userId: Types.ObjectId): Promise<any[]> {
     .select('modules name')
     .populate({
       path: 'modules.moduleId',
+      model: Module, // Explicitly specify the Module model
       select: 'name description image moduleType tags', // Fetch necessary attributes
     })
     .lean()
@@ -181,3 +175,4 @@ export async function getUserModules(userId: Types.ObjectId): Promise<any[]> {
   // Convert Map to Array
   return Array.from(modulesMap.values());
 }
+

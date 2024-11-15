@@ -19,7 +19,7 @@ const ModuleSchema: Schema = new mongoose.Schema({
   image: { type: String, required: true},
   description: {type: String, required: true},
   moduleType: { type: String, required: true }, 
-  tags: { type: [String], default: [] }, 
+  tags: { type: [String], default: [] },
   customizations: { type: Object, required: true, default: {} }, // Flexible structure for customizations
   createdAt: { type: Date, default: Date.now },
 });

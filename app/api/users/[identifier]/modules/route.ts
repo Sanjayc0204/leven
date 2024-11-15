@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserModules } from '@/services/userService';
 import { findUserByIdOrEmail } from '@/util/userUtils/getUserIdFromIdentifier';
 import { connectToDB } from '@/util/connectToDB'; 
+
+
+
 /**
  * Fetches all unique modules a user is part of.
  * Accepts both email and ID of user
