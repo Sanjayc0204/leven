@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
   }
 }
 
-// GET http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd/module/getModule
+// GET http://localhost:3000/api/communities/670ecf6e68be8ab7782a7bcd/module/getAllModule
 // {
 //   "success": true,
 //   "data": [

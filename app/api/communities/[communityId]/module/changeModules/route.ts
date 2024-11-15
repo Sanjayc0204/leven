@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { addModuleToCommunity, updateCommunityModules } from '@/services/communityService';
-import { connectToDB } from '@/util/connectToDB';  // Ensure this path is correct for your connection utility
+import { connectToDB } from '@/util/connectToDB';  
 import { Types } from 'mongoose';
 
 
