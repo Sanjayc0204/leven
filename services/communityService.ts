@@ -346,7 +346,7 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
     .select('modules')
     .populate({
       path: 'modules.moduleId',
-      select: 'name moduleType', // Fetch base module details
+      select: 'name moduleType description image tags', // Include additional attributes
     })
     .lean()
     .exec();
@@ -355,12 +355,21 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
     throw new Error("Community not found");
   }
 
-  // Return modules with direct customizations if present
-  return community.modules.map((module) => ({
-    ...module,
-    customizations: module.customizations || {},  // Use the customizations directly from modules array
-  }));
+  // Map the modules to include their details along with customizations
+  return community.modules.map((module) => {
+    const moduleData = module.moduleId as any; // Populated module details
+    return {
+      moduleId: moduleData._id,
+      moduleName: moduleData.name,
+      customizations: module.customizations || {}, // Include customizations
+      moduleType: moduleData.moduleType,
+      description: moduleData.description,
+      image: moduleData.image,
+      tags: moduleData.tags,
+    };
+  });
 }
+
 
 
 
