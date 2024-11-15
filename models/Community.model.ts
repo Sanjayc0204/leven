@@ -24,9 +24,9 @@ interface ICommunitySettings {
 export interface ICommunityModule {
   moduleId: mongoose.Types.ObjectId; // Reference to Module document
   moduleName: string;                // Name of the module (e.g., "Leetcode")
-  settings: object;                  // Any additional settings for the module
   customizations: {                  // Customizations applied within this community
     pointsScheme: PointsScheme;
+    [key: string]: any;              // Allows any additional customization properties
   };
 }
 
@@ -60,13 +60,6 @@ export interface ICommunity extends Document {
   modules: ICommunityModule[]; // Contains both module references and customizations
   settings: ICommunitySettings;
   createdAt: Date;
-}
-
-// Optional update structure for customizations, if needed for updating purposes
-export interface UpdateData {
-  customizations?: {
-    pointsScheme?: PointsScheme;
-  };
 }
 
 const CommunitySchema = new mongoose.Schema({
@@ -105,10 +98,8 @@ const CommunitySchema = new mongoose.Schema({
       moduleName: { type: String, required: true },
       settings: { type: Object, default: {} },
       customizations: {
-        pointsScheme: {
-          type: Object,
-          default: {},
-        },
+        type: Schema.Types.Mixed,   // Mixed allows for any structure within customizations
+        default: {}                 
       },
     },
   ],

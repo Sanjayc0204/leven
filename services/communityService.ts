@@ -261,13 +261,73 @@ export async function addModuleToCommunity(
   community.modules.push({
       moduleId: module._id as Types.ObjectId,
       moduleName: module.name,
-      settings: module.settings || {},                // Default settings from the module document
-      customizations                                  // Customizations with pointsScheme
+      customizations,                               // Customizations with pointsScheme
   });
 
   await community.save();
   return community;
 }
+
+
+/**
+ * Updates the modules list in a community (Admin Only).
+ *
+ * @param {Types.ObjectId} communityId - The ID of the community.
+ * @param {Types.ObjectId[]} moduleIds - Array of IDs of the modules to set in the community.
+ * @param {Types.ObjectId} userId - The ID of the user performing the action (for admin check).
+ * @returns {Promise<ICommunity>} - The updated community.
+ */
+export async function updateCommunityModules(
+  communityId: Types.ObjectId,
+  moduleIds: Types.ObjectId[],
+  userId: Types.ObjectId
+): Promise<ICommunity> {
+  const community = await Community.findById(communityId);
+  if (!community) {
+    throw new Error("Community not found");
+  }
+
+  // Check if the user is an admin
+  const userIsAdmin = community.members.some(
+    member => member._id.equals(userId) && member.role === "admin"
+  );
+  if (!userIsAdmin) {
+    throw new Error("User does not have admin privileges");
+  }
+
+  // Validate each module ID and retrieve module details
+  const modules = await Module.find({ _id: { $in: moduleIds } });
+  if (modules.length !== moduleIds.length) {
+    throw new Error("One or more modules not found");
+  }
+
+  // Update community modules while preserving existing customizations
+  community.modules = modules.map(module => {
+    const existingModule = community.modules.find(m =>
+      m.moduleId.equals(module._id as Types.ObjectId)
+    );
+
+    // Merge customizations
+    const mergedCustomizations = {
+      ...(existingModule?.customizations || {}),
+      ...(module.customizations || {}),
+      pointsScheme: {
+        ...(existingModule?.customizations?.pointsScheme || {}),
+        ...(module.customizations?.pointsScheme || {}),
+      },
+    };
+
+    return {
+      moduleId: module._id as Types.ObjectId,
+      moduleName: module.name,
+      customizations: mergedCustomizations,
+    };
+  });
+
+  await community.save();
+  return community;
+}
+
 
 
 
@@ -298,7 +358,6 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
   // Return modules with direct customizations if present
   return community.modules.map((module) => ({
     ...module,
-    settings: module.settings || {}, // Include default settings if none are set
     customizations: module.customizations || {},  // Use the customizations directly from modules array
   }));
 }
@@ -306,17 +365,17 @@ export async function getCommunityModules(communityId: Types.ObjectId): Promise<
 
 
 /**
- * Customize a module's pointsScheme directly without nesting in a community.
+ * Customize a module's settings directly within a community.
  *
  * @param {Types.ObjectId} communityId - The ID of the community.
  * @param {Types.ObjectId} moduleId - The ID of the module to customize.
- * @param {Record<string, number>} pointsSchemeUpdates - New points scheme settings.
+ * @param {Record<string, any>} customizations - Flexible customizations object.
  * @returns {Promise<ICommunity>} - The updated community document.
  */
 export async function customizeModule(
   communityId: Types.ObjectId,
   moduleId: Types.ObjectId,
-  pointsSchemeUpdates: Record<string, number>
+  customizations: Record<string, any>
 ): Promise<ICommunity> {
   await connectToDB();
 
@@ -327,13 +386,17 @@ export async function customizeModule(
   const module = community.modules.find((mod) => mod.moduleId.equals(moduleId));
   if (!module) throw new Error("Module not found in community");
 
-  // Directly replace the pointsScheme with the new updates
-  module.customizations.pointsScheme = pointsSchemeUpdates;
+  // Merge customizations into the module's existing customizations
+  module.customizations = {
+    ...module.customizations,
+    ...customizations
+  };
 
   // Save the updated community
   await community.save();
   return community;
 }
+
 
 
 
