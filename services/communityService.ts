@@ -19,10 +19,10 @@ interface IMember {
 }
 
 /**
- * Fetch communities based on the search query or return top 10 if no query.
- *
+ * Fetch communities based on the search query or return communities no limit.
+ * 
  * @param {string} [searchQuery] - Optional search query for communities.
- * @returns {Promise<ICommunity[]>} - List of communities that match the search or top 10.
+ * @returns {Promise<ICommunity[]>} - List of public communities that match the search or top 10.
  */
 export async function fetchAllCommunities(
   searchQuery?: string
@@ -32,18 +32,20 @@ export async function fetchAllCommunities(
   let communities: ICommunity[] = [];
 
   if (searchQuery) {
-    // Search for communities matching the query (case-insensitive)
+    // Search for public communities matching the query (case-insensitive)
     communities = await Community.find({
-      name: { $regex: searchQuery, $options: "i" },
+      'settings.privacy.isPrivate': false, // Filter for public communities
+      name: { $regex: searchQuery, $options: 'i' }, // Case-insensitive search
     });
   } else {
-    // Return all communities
-    communities = await Community.find({});
-    //communities = await Community.find({}).limit(10)
+    // Return top 10 public communities
+    communities = await Community.find({ 'settings.privacy.isPrivate': false });
   }
-  console.log(communities);
+
+  console.log('[fetchAllCommunities] Found communities:', communities);
   return communities;
 }
+
 
 /**
  * Creates a new community in the database and adds the initial modules with their customizations.
