@@ -12,8 +12,8 @@ interface ICommunitySettings {
   };
   privacy?: {
     isPrivate: boolean;            // Whether the community is private
-    inviteLink?: string;           // Unique invite link for private access
-    inviteExpiration?: Date;       // Expiration date for invite link
+    inviteLink?: string | null;           // Unique invite link for private access
+    inviteExpiration?: Date | null;       // Expiration date for invite link
   };
   leaderboard?: {
     showStreaks: boolean;          // Show streaks on leaderboard
