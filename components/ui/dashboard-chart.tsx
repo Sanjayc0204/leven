@@ -37,19 +37,31 @@ function ChartCard({
   dailyAverage,
 }) {
   console.log("Chart data:", chartData);
-  console.log("Bhosdiwala", dailyAverage);
+  console.log("chart data2", dailyAverage);
 
-  const combinedDataArray = Object.keys(dailyAverage).map((date) => ({
-    date,
-    ...dailyAverage[date],
-    ...(chartData[date] || { activity: 0 }), // Spread an empty object if there's no match in chartData
+  const chartDataMap = new Map(
+    chartData.map((item) => [item.date, item.activity])
+  );
+
+  console.log("Chartmap", chartDataMap.get("12/1/2024"));
+
+  const combinedDataArray = dailyAverage.map((element) => ({
+    date: element.date,
+    avgActivity: element.avgActivity || 0, // Ensure `avgActivity` is handled safely
+    activity: chartDataMap.get(element.date) || 0, // Use 0 as the default fallback for `activity`
   }));
 
-  console.log("Bhabiwala", combinedDataArray);
+  console.log("chart data3", combinedDataArray);
+  combinedDataArray.sort((element1, element2) => {
+    const date1 = new Date(element1.date);
+    const date2 = new Date(element2.date);
+
+    return date1 - date2;
+  });
 
   const tickFormatter = (dateStr) => {
-    const date = new Date(dateStr);
-    return format(date, "MMM d");
+    const date = format(new Date(dateStr), "MMM dd");
+    return date;
   };
 
   if (!chartData || chartData.length === 0) {
@@ -198,7 +210,7 @@ export function DashboardChart() {
       > = {};
 
       communityTasksData.data.forEach((task) => {
-        const date = formatDate(new Date(task.completedAt), "MMM dd");
+        const date = formatDate(new Date(task.completedAt), "MM/dd/yyyy");
         const userId = task.userId;
 
         if (!dateMap[date]) {
@@ -212,7 +224,7 @@ export function DashboardChart() {
         }
       });
 
-      const averages: DailyAverage[] = Object.keys(dateMap).map((date) => {
+      let averages: DailyAverage[] = Object.keys(dateMap).map((date) => {
         const { points, tasks, users } = dateMap[date];
         if (selectedCategory === "Points") {
           return {
@@ -229,14 +241,38 @@ export function DashboardChart() {
         }
       });
 
+      console.log("community averages: ", averages);
+
+      const filterByRange = (days) => {
+        const todayDate = Date.now();
+        return averages.filter((item) => {
+          const itemDate = new Date(item.date);
+          const diffInDays = (todayDate - itemDate) / (1000 * 60 * 60 * 24);
+          console.log("Itemdate:", itemDate, diffInDays);
+          return diffInDays <= days;
+        });
+      };
+
+      if (range === "week") {
+        averages = filterByRange(7);
+      } else if (range === "month") {
+        averages = filterByRange(30);
+      } else if (range === "year") {
+        averages = filterByRange(365);
+      }
+
       setDailyAverage(averages);
     }
-  }, [communityTasksData, selectedCategory]);
+  }, [communityTasksData, selectedCategory, range]);
 
   useEffect(() => {
     if (data) {
       let formattedData = data.reduce((acc, record) => {
-        const date = new Date(record.completedAt).toLocaleDateString();
+        const date = new Date(record.completedAt).toLocaleDateString("en-US", {
+          month: "2-digit",
+          day: "2-digit",
+          year: "numeric",
+        });
         const existingRecord = acc.find((item) => item.date === date);
 
         if (existingRecord) {
@@ -256,6 +292,7 @@ export function DashboardChart() {
         return formattedData.filter((item) => {
           const itemDate = new Date(item.date);
           const diffInDays = (todayDate - itemDate) / (1000 * 60 * 60 * 24);
+          console.log("Itemdate:", itemDate, diffInDays);
           return diffInDays <= days;
         });
       };
