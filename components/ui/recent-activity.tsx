@@ -3,7 +3,13 @@
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useUserProfileStore } from "@/app/store/userProfileStore";
 import LoadingSpinner from "./loading-spinner";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./card";
 import { ScrollArea } from "./scroll-area";
 import {
   Activity,

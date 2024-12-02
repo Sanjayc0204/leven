@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
+import { useTasksByCommunityId } from "../queries/fetchTasksByCommunity";
 
 function ChartCard({
   chartData,
@@ -33,8 +34,18 @@ function ChartCard({
   setSelectedCategory,
   setRange,
   range,
+  dailyAverage,
 }) {
   console.log("Chart data:", chartData);
+  console.log("Bhosdiwala", dailyAverage);
+
+  const combinedDataArray = Object.keys(dailyAverage).map((date) => ({
+    date,
+    ...dailyAverage[date],
+    ...(chartData[date] || { activity: 0 }), // Spread an empty object if there's no match in chartData
+  }));
+
+  console.log("Bhabiwala", combinedDataArray);
 
   const tickFormatter = (dateStr) => {
     const date = new Date(dateStr);
@@ -44,7 +55,7 @@ function ChartCard({
   if (!chartData || chartData.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center font-bold text-4xl">
-        No activity data a vailable
+        No activity data available
       </div>
     );
   }
@@ -103,7 +114,7 @@ function ChartCard({
       </CardHeader>
       <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData}>
+          <AreaChart data={combinedDataArray}>
             <XAxis dataKey="date" tickFormatter={tickFormatter} />
             <CartesianGrid vertical={false} />
             <ChartTooltip
@@ -116,6 +127,13 @@ function ChartCard({
               fill={chartConfig.activity.color}
               fillOpacity={0.4}
               stroke={chartConfig.activity.color}
+            />
+            <Area
+              dataKey="avgActivity"
+              type="natural"
+              fill={chartConfig.avgActivity.color}
+              fillOpacity={0.4}
+              stroke={chartConfig.avgActivity.color}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -133,8 +151,11 @@ export function DashboardChart() {
   const [range, setRange] = useState("week");
 
   const { data, isLoading, isError, error } = useTasksByUserId(
-    userId || "",
+    "672ce741c1ef242211fe7d9b",
     communityId || ""
+  );
+  const { data: communityTasksData } = useTasksByCommunityId(
+    communityId as string
   );
 
   const [activityTimeArray, setActivityTimeArray] = useState([]);
@@ -145,16 +166,72 @@ export function DashboardChart() {
         label: "Points",
         color: "hsl(173 58% 39%)",
       },
+      avgActivity: {
+        label: "Avg Points",
+        color: "hsl(12 76% 61%)",
+      },
     },
     Tasks: {
       activity: {
         label: "Tasks",
         color: "hsl(210 58% 50%)",
       },
+      avgActivity: {
+        label: "Avg Tasks",
+        color: "hsl(12 76% 61%)",
+      },
     },
   };
 
   const chartConfig = chartConfigMap[selectedCategory];
+
+  type DailyAverage = { date: string; avgPoints: number; avgTasks: number };
+
+  const [dailyAverage, setDailyAverage] = useState<DailyAverage[]>([]);
+
+  useEffect(() => {
+    if (communityTasksData) {
+      console.log("jahangir", communityTasksData.data);
+      const dateMap: Record<
+        string,
+        { points: number; tasks: number; users: Set<string> }
+      > = {};
+
+      communityTasksData.data.forEach((task) => {
+        const date = formatDate(new Date(task.completedAt), "MMM dd");
+        const userId = task.userId;
+
+        if (!dateMap[date]) {
+          dateMap[date] = { points: 0, tasks: 0, users: new Set() };
+        }
+
+        dateMap[date].points += task.points;
+        dateMap[date].tasks += 1;
+        if (!dateMap[date].users.has(userId)) {
+          dateMap[date].users.add(userId);
+        }
+      });
+
+      const averages: DailyAverage[] = Object.keys(dateMap).map((date) => {
+        const { points, tasks, users } = dateMap[date];
+        if (selectedCategory === "Points") {
+          return {
+            date,
+            avgActivity: points / users.size,
+          };
+        }
+        if (selectedCategory === "Tasks") {
+          console.log("sheesh");
+          return {
+            date,
+            avgActivity: tasks / users.size,
+          };
+        }
+      });
+
+      setDailyAverage(averages);
+    }
+  }, [communityTasksData, selectedCategory]);
 
   useEffect(() => {
     if (data) {
@@ -211,6 +288,7 @@ export function DashboardChart() {
         setSelectedCategory={setSelectedCategory}
         setRange={setRange}
         range={range}
+        dailyAverage={dailyAverage}
       />
     </div>
   );
