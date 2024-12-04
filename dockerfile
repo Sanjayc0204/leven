@@ -7,6 +7,11 @@ WORKDIR /app
 # Copy all files in dir
 COPY . .
 
-RUN npm install --production
+RUN npm install
 
-RUN npm build
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
+
