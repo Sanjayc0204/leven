@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/util/connectToDB"; // Adjust the path based on your folder structure
+import { connectToDB } from "@/util/connectToDB"; // Adjust the path based on your folder structure
 import Module from "@/models/Module.model";
 
 /**
@@ -10,7 +10,7 @@ import Module from "@/models/Module.model";
  */
 export async function GET(): Promise<NextResponse> {
   // Ensure database connection
-  await dbConnect();
+  await connectToDB();
 
   try {
     // Fetch all available modules
