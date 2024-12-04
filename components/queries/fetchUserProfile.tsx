@@ -9,7 +9,7 @@ const fetchUserProfile = async (searchQuery: string) => {
 };
 
 export const useUserProfile = (searchQuery = "") => {
-  console.log("User Profile Query", process.env.MONGODB_URI);
+  console.log("User Profile Query");
   return useQuery({
     queryKey: ["userProfile", searchQuery],
     queryFn: () => fetchUserProfile(searchQuery),
