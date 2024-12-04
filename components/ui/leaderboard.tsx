@@ -60,6 +60,7 @@ interface leaderboardDivProps {
 }
 
 function LeaderboardCardDiv({ name, points, img, index }: leaderboardDivProps) {
+  console.log();
   leaderboardData.sort((a, b) => b.points - a.points);
   return (
     <div
