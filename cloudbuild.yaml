@@ -1,3 +1,7 @@
+serviceAccount: 820070072100-compute@developer.gserviceaccount.com
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 steps:
   - name: node:20.13.1
     entrypoint: npm
