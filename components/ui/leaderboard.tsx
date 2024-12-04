@@ -10,8 +10,6 @@ import { Badge } from "./badge";
 import { useLeaderboard } from "../queries/fetchLeaderboard";
 import LeaderboardSkeleton from "./leaderboard-skeleton";
 import { useCommunityStore } from "@/app/store/communityStore";
-import { ICommunity } from "@/models/Community.model";
-import { IUser } from "@/models/User.model";
 
 interface LeaderboardUser {
   userId: string;

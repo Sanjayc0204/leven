@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -28,7 +27,6 @@ type CommunityInformationValues = z.infer<typeof communityInformationSchema>;
 
 export default function CommunityInformationForm() {
   const [imagePreview, setImagePreview] = useState("");
-  const router = useRouter();
   const communityData = useCommunityStore((state) => state.communityData);
 
   const [formData, setFormData] = useState({

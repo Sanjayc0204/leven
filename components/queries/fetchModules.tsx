@@ -1,5 +1,4 @@
 "use client";
-import { ICommunity } from "@/models/Community.model";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchModules = async () => {

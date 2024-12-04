@@ -1,99 +1,80 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Search, UserX } from "lucide-react";
-import { useCommunityStore } from "@/app/store/communityStore";
+// import { useEffect, useState } from "react";
+
+// import { useCommunityStore } from "@/app/store/communityStore";
 
 // Simulated server action
-async function removeMember(memberId: string) {
-  // In a real application, this would be a server action that removes the member from the database
-  console.log(`Removing member with ID: ${memberId}`);
-  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-  return { success: true };
-}
+// async function removeMember(memberId: string) {
+//   // In a real application, this would be a server action that removes the member from the database
+//   console.log(`Removing member with ID: ${memberId}`);
+//   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+//   return { success: true };
+// }
 
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  joinDate: string;
-}
+// interface Member {
+//   id: string;
+//   name: string;
+//   email: string;
+//   joinDate: string;
+// }
 
-const initialMembers: Member[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    joinDate: "2023-01-15",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    joinDate: "2023-02-20",
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob@example.com",
-    joinDate: "2023-03-10",
-  },
-  {
-    id: "4",
-    name: "Alice Brown",
-    email: "alice@example.com",
-    joinDate: "2023-04-05",
-  },
-  {
-    id: "5",
-    name: "Charlie Davis",
-    email: "charlie@example.com",
-    joinDate: "2023-05-12",
-  },
-];
+// const initialMembers: Member[] = [
+//   {
+//     id: "1",
+//     name: "John Doe",
+//     email: "john@example.com",
+//     joinDate: "2023-01-15",
+//   },
+//   {
+//     id: "2",
+//     name: "Jane Smith",
+//     email: "jane@example.com",
+//     joinDate: "2023-02-20",
+//   },
+//   {
+//     id: "3",
+//     name: "Bob Johnson",
+//     email: "bob@example.com",
+//     joinDate: "2023-03-10",
+//   },
+//   {
+//     id: "4",
+//     name: "Alice Brown",
+//     email: "alice@example.com",
+//     joinDate: "2023-04-05",
+//   },
+//   {
+//     id: "5",
+//     name: "Charlie Davis",
+//     email: "charlie@example.com",
+//     joinDate: "2023-05-12",
+//   },
+// ];
 
 export default function CommunityAdminDashboard() {
-  const [members, setMembers] = useState(initialMembers);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
-  const actualMembers = useCommunityStore(
-    (state) => state.communityData
-  )?.members;
+  return <></>;
+  // const [members, setMembers] = useState(initialMembers);
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
+  // const actualMembers = useCommunityStore(
+  //   (state) => state.communityData
+  // )?.members;
 
-  useEffect(() => {
-    if (actualMembers) {
-      setMembers(actualMembers);
-      console.log("jahangir", actualMembers);
-    }
-  }, [actualMembers]);
+  // useEffect(() => {
+  //   if (actualMembers) {
+  //     setMembers(actualMembers);
+  //     console.log("jahangir", actualMembers);
+  //   }
+  // }, [actualMembers]);
 
-  return <div>Hi</div>;
+  // return <div>Hi</div>;
 
-  const filteredMembers = members?.filter(
-    (member) =>
-      member?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member?.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredMembers = members?.filter(
+  //   (member) =>
+  //     member?.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     member?.email.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   //   const handleRemoveMember = async () => {
   //     if (memberToRemove) {

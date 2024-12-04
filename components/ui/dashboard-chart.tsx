@@ -1,7 +1,7 @@
 "use client";
 
 import { useCommunityStore } from "@/app/store/communityStore";
-import { useUserProfileStore } from "@/app/store/userProfileStore";
+// import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useTasksByUserId } from "../queries/fetchTasksByUserId";
 import { useEffect, useState } from "react";
 import {
@@ -27,6 +27,52 @@ import {
 import { format, formatDate } from "date-fns";
 import { useTasksByCommunityId } from "../queries/fetchTasksByCommunity";
 
+interface TaskEntry {
+  communityId: string;
+  completedAt: string;
+  description: string;
+  metadata: [string];
+  moduleId: string;
+  points: number;
+  __v: number;
+  _id: string;
+  userId: {
+    username: string;
+    _id: string;
+  };
+}
+
+interface FormattedEntry {
+  date: string;
+  activity: number;
+}
+
+interface CombinedEntry {
+  date: string;
+  activity: number;
+  avgActivity: number;
+}
+
+interface DailyAvg {
+  date: string;
+  activity: number;
+  avgActivity: number;
+  avgPoints: number;
+}
+
+interface ChartCardInterface {
+  chartData: FormattedEntry[];
+  selectedCategory: string;
+  chartConfig: {
+    activity: { label: string; color: string };
+    avgActivity: { label: string; color: string };
+  };
+  setSelectedCategory: React.Dispatch<"Points" | "Tasks">;
+  setRange: (range: string) => void;
+  range: string;
+  dailyAverage: DailyAvg[];
+}
+
 function ChartCard({
   chartData,
   selectedCategory,
@@ -35,36 +81,34 @@ function ChartCard({
   setRange,
   range,
   dailyAverage,
-}) {
-  console.log("Chart data:", chartData);
-  console.log("chart data2", dailyAverage);
-
+}: ChartCardInterface) {
+  console.log("Daily Average", typeof range);
   const chartDataMap = new Map(
-    chartData.map((item) => [item.date, item.activity])
+    chartData.map((item: FormattedEntry) => [item.date, item.activity])
   );
 
   console.log("Chartmap", chartDataMap.get("12/1/2024"));
 
-  const combinedDataArray = dailyAverage.map((element) => ({
+  const combinedDataArray = dailyAverage.map((element: CombinedEntry) => ({
     date: element.date,
-    avgActivity: element.avgActivity || 0, // Ensure `avgActivity` is handled safely
-    activity: chartDataMap.get(element.date) || 0, // Use 0 as the default fallback for `activity`
+    avgActivity: element.avgActivity || 0,
+    activity: chartDataMap.get(element.date) || 0,
   }));
 
   console.log("chart data3", combinedDataArray);
-  combinedDataArray.sort((element1, element2) => {
+  combinedDataArray.sort((element1: CombinedEntry, element2: CombinedEntry) => {
     const date1 = new Date(element1.date);
     const date2 = new Date(element2.date);
 
-    return date1 - date2;
+    return date1.getTime() - date2.getTime();
   });
 
-  const tickFormatter = (dateStr) => {
+  const tickFormatter = (dateStr: string) => {
     const date = format(new Date(dateStr), "MMM dd");
     return date;
   };
 
-  if (!chartData || chartData.length === 0) {
+  if (!chartData) {
     return (
       <div className="w-full h-full flex items-center justify-center font-bold text-4xl">
         No activity data available
@@ -155,11 +199,13 @@ function ChartCard({
 }
 
 export function DashboardChart() {
-  const userId = useUserProfileStore((state) => state.userProfile?.data._id);
+  // const userId = useUserProfileStore((state) => state.userProfile?.data._id);
   const communityId = useCommunityStore(
     (state) => state.communityData?._id
   ) as string;
-  const [selectedCategory, setSelectedCategory] = useState("Points");
+  const [selectedCategory, setSelectedCategory] = useState<"Points" | "Tasks">(
+    "Points"
+  );
   const [range, setRange] = useState("week");
 
   const { data, isLoading, isError, error } = useTasksByUserId(
@@ -170,9 +216,16 @@ export function DashboardChart() {
     communityId as string
   );
 
-  const [activityTimeArray, setActivityTimeArray] = useState([]);
+  const [activityTimeArray, setActivityTimeArray] = useState<FormattedEntry[]>(
+    []
+  );
 
-  const chartConfigMap = {
+  const chartConfigMap: {
+    [key in "Points" | "Tasks"]: {
+      activity: { label: string; color: string };
+      avgActivity: { label: string; color: string };
+    };
+  } = {
     Points: {
       activity: {
         label: "Points",
@@ -197,7 +250,13 @@ export function DashboardChart() {
 
   const chartConfig = chartConfigMap[selectedCategory];
 
-  type DailyAverage = { date: string; avgPoints: number; avgTasks: number };
+  type DailyAverage = {
+    date: string;
+    activity: number;
+    avgPoints: number;
+    avgTasks: number;
+    avgActivity: number;
+  };
 
   const [dailyAverage, setDailyAverage] = useState<DailyAverage[]>([]);
 
@@ -209,7 +268,7 @@ export function DashboardChart() {
         { points: number; tasks: number; users: Set<string> }
       > = {};
 
-      communityTasksData.data.forEach((task) => {
+      communityTasksData.data.forEach((task: TaskEntry) => {
         const date = formatDate(new Date(task.completedAt), "MM/dd/yyyy");
         const userId = task.userId;
 
@@ -219,8 +278,8 @@ export function DashboardChart() {
 
         dateMap[date].points += task.points;
         dateMap[date].tasks += 1;
-        if (!dateMap[date].users.has(userId)) {
-          dateMap[date].users.add(userId);
+        if (!dateMap[date].users.has(userId._id)) {
+          dateMap[date].users.add(userId._id);
         }
       });
 
@@ -230,6 +289,9 @@ export function DashboardChart() {
           return {
             date,
             avgActivity: points / users.size,
+            avgPoints: 0,
+            avgTasks: 0,
+            activity: 0,
           };
         }
         if (selectedCategory === "Tasks") {
@@ -237,17 +299,28 @@ export function DashboardChart() {
           return {
             date,
             avgActivity: tasks / users.size,
+            avgPoints: 0,
+            avgTasks: 0,
+            activity: 0,
           };
         }
+        return {
+          date,
+          avgActivity: 0,
+          avgPoints: 0,
+          avgTasks: 0,
+          activity: 0,
+        };
       });
 
       console.log("community averages: ", averages);
 
-      const filterByRange = (days) => {
+      const filterByRange = (days: number) => {
         const todayDate = Date.now();
-        return averages.filter((item) => {
-          const itemDate = new Date(item.date);
-          const diffInDays = (todayDate - itemDate) / (1000 * 60 * 60 * 24);
+        return averages?.filter((item) => {
+          const itemDate = new Date(item?.date);
+          const diffInDays =
+            (todayDate - itemDate.getTime()) / (1000 * 60 * 60 * 24);
           console.log("Itemdate:", itemDate, diffInDays);
           return diffInDays <= days;
         });
@@ -267,31 +340,39 @@ export function DashboardChart() {
 
   useEffect(() => {
     if (data) {
-      let formattedData = data.reduce((acc, record) => {
-        const date = new Date(record.completedAt).toLocaleDateString("en-US", {
-          month: "2-digit",
-          day: "2-digit",
-          year: "numeric",
-        });
-        const existingRecord = acc.find((item) => item.date === date);
+      console.log("dashboard data", data);
+      let formattedData = data.reduce(
+        (acc: [FormattedEntry], record: TaskEntry) => {
+          const date = new Date(record.completedAt).toLocaleDateString(
+            "en-US",
+            {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            }
+          );
+          const existingRecord = acc.find((item) => item.date === date);
 
-        if (existingRecord) {
-          existingRecord.activity +=
-            selectedCategory === "Points" ? record.points : 1;
-        } else {
-          acc.push({
-            date,
-            activity: selectedCategory === "Points" ? record.points : 1,
-          });
-        }
-        return acc;
-      }, []);
+          if (existingRecord) {
+            existingRecord.activity +=
+              selectedCategory === "Points" ? record.points : 1;
+          } else {
+            acc.push({
+              date,
+              activity: selectedCategory === "Points" ? record.points : 1,
+            });
+          }
+          return acc;
+        },
+        []
+      );
 
-      const filterByRange = (days) => {
+      const filterByRange = (days: number) => {
         const todayDate = Date.now();
-        return formattedData.filter((item) => {
+        return formattedData.filter((item: FormattedEntry) => {
           const itemDate = new Date(item.date);
-          const diffInDays = (todayDate - itemDate) / (1000 * 60 * 60 * 24);
+          const diffInDays =
+            (todayDate - itemDate.getTime()) / (1000 * 60 * 60 * 24);
           console.log("Itemdate:", itemDate, diffInDays);
           return diffInDays <= days;
         });

@@ -1,6 +1,5 @@
 "use client";
 import { useCommunityStore } from "@/app/store/communityStore";
-import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useTasksByUserId } from "@/components/queries/fetchTasksByUserId";
 import { useUserProfile } from "@/components/queries/fetchUserProfile";
 import { Badge } from "@/components/ui/badge";
@@ -126,7 +125,9 @@ function SummaryCard({ taskHistory, userName }: SummaryCardProps) {
     <Card className="mb-6 flex-grow">
       <CardHeader>
         <CardTitle>Summary</CardTitle>
-        <CardDescription>{userName}'s task completion overview</CardDescription>
+        <CardDescription>
+          {userName}&aposs task completion overview
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center">

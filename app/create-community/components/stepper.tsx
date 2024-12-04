@@ -1,17 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { BookUser, Check, Layers, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { cn } from "@/lib/utils";
 import { useStepStore } from "../store/createCommunityStepStore";
-
-interface Step {
-  id: number;
-  title: string;
-  description: string;
-  icon: React.ElementType;
-}
+import { Check, FileText, Layers } from "lucide-react";
 
 const steps = [
   {
@@ -36,21 +28,8 @@ const steps = [
 
 export default function ProgressiveStepper() {
   const currentStep = useStepStore((state) => state.stepData);
-  const setCurrentStep = useStepStore((state) => state.setStepData);
   const setStepLength = useStepStore((state) => state.setStepLength);
   setStepLength(steps.length);
-
-  const handleNext = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
 
   return (
     <div className="w-full max-w-2xl mx-auto px-2 py-4 sticky pb-0">

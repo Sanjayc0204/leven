@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check } from "lucide-react";
-import Link from "next/link";
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useModules } from "@/components/queries/fetchModules";
 import { ICommunityModule } from "@/models/Community.model";

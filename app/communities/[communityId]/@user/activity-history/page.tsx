@@ -164,7 +164,7 @@ function SummaryCard({ taskHistory }: SummaryCardProps) {
 }
 
 export default function CommunityPage() {
-  const userEmail = useUserProfileStore((state) => state.userProfile)?.data._id;
+  const userEmail = useUserProfileStore((state) => state.userProfile)?._id;
   const communityId = useCommunityStore((state) => state.communityData)
     ?._id as string;
   console.log("userid", userEmail);

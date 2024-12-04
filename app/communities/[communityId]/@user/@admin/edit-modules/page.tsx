@@ -28,8 +28,6 @@ interface ModuleCustomizations {
   };
 }
 
-interface Settings {}
-
 interface ModuleID {
   moduleType: string;
   name: string;
@@ -39,7 +37,6 @@ interface ModuleID {
 interface ModuleData {
   moduleId: ModuleID;
   moduleName: string;
-  settings: Settings;
   customizations: ModuleCustomizations;
   _id: string;
 }
