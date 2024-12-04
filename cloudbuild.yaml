@@ -10,6 +10,6 @@ steps:
     entrypoint: npm
     args: ["run", "create-env"]
     env:
-      - "MY_SECRET_KEY=${_MY_SECRET_KEY}"
+      - "MONGODB_URI=${_MONGODB_URI}"
   - name: "gcr.io/cloud-builders/gcloud"
     args: ["app", "deploy"]
