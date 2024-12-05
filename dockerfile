@@ -36,7 +36,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 
 # Expose the port
-EXPOSE $PORT
+EXPOSE 8080
 
 # Start the app
 USER nextjs
