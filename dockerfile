@@ -1,5 +1,5 @@
 # Setting the Base Image
-FROM node:20.13.1-alpine
+FROM node:20.13.1-alpine as builder
 
 ENV GOOGLE_CLIENT_ID=539750439687-fqbcl1n2tho5s362loafhqas2bkkknrk.apps.googleusercontent.com
 ENV GOOGLE_CLIENT_SECRET=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
