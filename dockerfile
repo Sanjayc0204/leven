@@ -8,13 +8,6 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-ENV GOOGLE_CLIENT_ID=539750439687-fqbcl1n2tho5s362loafhqas2bkkknrk.apps.googleusercontent.com
-ENV GOOGLE_CLIENT_SECRET=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
-ENV MONGODB_URI=mongodb+srv://Condyte:CondyteMongo123!@clustercondyte.fsqdl.mongodb.net/?retryWrites=true&w=majority&appName=ClusterCondyte
-ENV NEXTAUTH_URL=http://localhost:3000
-ENV NEXTAUTH_URL_INTERNAL=http://localhost:3000
-ENV NEXTAUTH_SECRET=7r4+1+ofOit9HuSTHVps2TerJEiAHZJr925rqqDJ0hg=
-
 # Install dependencies based on the preferred package manager
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 RUN \
@@ -35,6 +28,13 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
+
+ENV GOOGLE_CLIENT_ID=539750439687-fqbcl1n2tho5s362loafhqas2bkkknrk.apps.googleusercontent.com
+ENV GOOGLE_CLIENT_SECRET=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
+ENV MONGODB_URI=mongodb+srv://Condyte:CondyteMongo123!@clustercondyte.fsqdl.mongodb.net/?retryWrites=true&w=majority&appName=ClusterCondyte
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXTAUTH_URL_INTERNAL=http://localhost:3000
+ENV NEXTAUTH_SECRET=7r4+1+ofOit9HuSTHVps2TerJEiAHZJr925rqqDJ0hg=
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
@@ -63,9 +63,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE $PORT
 
-ENV PORT=3000
+ENV PORT=$PORT
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
