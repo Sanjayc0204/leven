@@ -40,4 +40,4 @@ EXPOSE $PORT
 
 # Start the app
 USER nextjs
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]
