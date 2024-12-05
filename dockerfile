@@ -23,7 +23,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built files from builder
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/.next /usr/share/nginx/html
 
 # Create nginx.conf that reads PORT environment variable from cloud run - google assigns random ports, so we need this
 RUN printf 'server {\n\
