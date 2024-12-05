@@ -13,7 +13,7 @@ export default function Home() {
         {/* Image Section with Gradient Fade */}
         <div className="relative w-full md:w-1/2 h-64 md:h-auto scale-x-[-1]">
           <Image
-            src="https://images.ctfassets.net/7ajcefednbt4/fFUIUeknqmGAsckVCG6HJ/80992143037fca194d9206b925c91f1b/MB.jpg?fm=webp&w=1200"
+            src="https://images.ctfassets.net/7ajcefednbt4/fFUIUeknqmGAsckVCG6HJ/80992143037fca194d9206b925c91f1b/MB.jpg"
             alt="Leven Community"
             layout="fill"
             objectFit="cover"
