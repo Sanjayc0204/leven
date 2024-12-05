@@ -1,13 +1,12 @@
-serviceAccount: 820070072100-compute@developer.gserviceaccount.com
-options:
-  logging: CLOUD_LOGGING_ONLY
-
 steps:
-  - name: node:20.13.1
-    entrypoint: npm
-    args: ["install"]
-  - name: node:20.13.1
-    entrypoint: npm
-    args: ["run", "create-env"]
-    env:
-      - "MONGODB_URI=${_MONGODB_URI}"
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "gcr.io/condyte-mvp-v1/github.com/candooit/condyteplatform-ts:$COMMIT_SHA"
+      - "-f"
+      - "dockerfile"
+      - "."
+
+images:
+  - "gcr.io/condyte-mvp-v1/github.com/candooit/condyteplatform-ts:$COMMIT_SHA"
