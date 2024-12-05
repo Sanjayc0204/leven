@@ -31,13 +31,24 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy package files and install production dependencies
+COPY --from=builder /app/package*.json ./
+RUN npm ci --only=production
+
 # Copy built artifacts
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 
+# Ensure correct permissions
+RUN chown -R nextjs:nodejs /app
+
 # Expose the port
-EXPOSE 8080
+EXPOSE $PORT
+
+# Add debugging steps
+RUN echo "Contents of /app:" && ls -la
+RUN echo "Contents of /app/.next:" && ls -la .next
 
 # Start the app
 USER nextjs
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "echo PORT is $PORT && npm run start"]
