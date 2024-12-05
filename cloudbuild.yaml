@@ -11,5 +11,3 @@ steps:
     args: ["run", "create-env"]
     env:
       - "MONGODB_URI=${_MONGODB_URI}"
-  - name: "gcr.io/cloud-builders/gcloud"
-    args: ["app", "deploy"]
