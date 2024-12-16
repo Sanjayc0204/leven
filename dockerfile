@@ -24,8 +24,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV GOOGLE_CLIENT_ID=539750439687-fqbcl1n2tho5s362loafhqas2bkkknrk.apps.googleusercontent.com
-ENV GOOGLE_CLIENT_SECRET=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
+ENV GOOGLE_CLIENT_ID=787577706957-imtf06up8saoe67j45c54facouto7puh.apps.googleusercontent.com
+ENV GOOGLE_CLIENT_SECRET=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
 ENV MONGODB_URI=mongodb+srv://Condyte:CondyteMongo123!@clustercondyte.fsqdl.mongodb.net/?retryWrites=true&w=majority&appName=ClusterCondyte
 ENV NEXTAUTH_URL=http://leven-app.com
 ENV NEXTAUTH_URL_INTERNAL=http://leven-app.com
