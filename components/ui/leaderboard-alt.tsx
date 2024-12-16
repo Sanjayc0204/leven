@@ -155,12 +155,6 @@ function LeaderboardCard() {
     );
   }
 
-  const breakpointColumnsObj = {
-    default: 3,
-    1100: 3,
-    700: 1,
-  };
-
   if (data) {
     const leaderboardArray: LeaderboardUser[] = data.data;
     return (

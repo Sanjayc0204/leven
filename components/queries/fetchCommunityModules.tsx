@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const fetchCommunityModules = async (communityId = "") => {
   const response = await fetch(
-    `/api/communities/${communityId}/module/getModule`
+    `/api/communities/${communityId}/module/getAllModules`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch leaderboard");

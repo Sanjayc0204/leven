@@ -1,53 +1,68 @@
 "use client";
 
 import { useCommunityStore } from "@/app/store/communityStore";
-import { useUserProfileStore } from "@/app/store/userProfileStore";
+// import { useUserProfileStore } from "@/app/store/userProfileStore";
 import LoadingSpinner from "./loading-spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { ScrollArea } from "./scroll-area";
 import {
-  Activity,
-  Code,
-  GitFork,
+  // Activity,
+  // Code,
+  // GitFork,
   GripHorizontal,
-  MessageSquare,
-  Trophy,
+  // MessageSquare,
+  // Trophy,
   Clock,
 } from "lucide-react";
 import { Badge } from "./badge";
 import { formatDistanceToNow } from "date-fns";
 import { useTasksByCommunityId } from "../queries/fetchTasksByCommunity";
 
-type ActivityItem = {
-  _id: string;
-  description: string;
+interface ActivityItem {
+  communityId: string;
   completedAt: string;
+  description: string;
+  metadata: [string];
+  moduleId: string;
   points: number;
-  metadata: string[];
-  type: "submission" | "discussion" | "contribution" | "achievement";
-};
+  __v: number;
+  _id: string;
+  userId: {
+    username: string;
+    _id: string;
+  };
+}
+
+// type ActivityItem = {
+//   _id: string;
+//   description: string;
+//   completedAt: string;
+//   points: number;
+//   metadata: string[];
+//   type: "submission" | "discussion" | "contribution" | "achievement";
+// };
 
 export default function RecentActivity() {
-  const userId = useUserProfileStore((state) => state.userProfile)?.data._id;
+  // const userId = useUserProfileStore((state) => state.userProfile)?.data._id;
   const communityId = useCommunityStore((state) => state.communityData)?._id;
   const { data, isLoading, isError, error } = useTasksByCommunityId(
     communityId as string
   );
 
-  const getActivityIcon = (type: ActivityItem["type"]) => {
-    switch (type) {
-      case "submission":
-        return <Code className="h-4 w-4" />;
-      case "discussion":
-        return <MessageSquare className="h-4 w-4" />;
-      case "contribution":
-        return <GitFork className="h-4 w-4" />;
-      case "achievement":
-        return <Trophy className="h-4 w-4" />;
-      default:
-        return <Activity className="h-4 w-4" />;
-    }
-  };
+  // const getActivityIcon = (type: ActivityItem["type"]) => {
+  //   switch (type) {
+  //     case "submission":
+  //       return <Code className="h-4 w-4" />;
+  //     case "discussion":
+  //       return <MessageSquare className="h-4 w-4" />;
+  //     case "contribution":
+  //       return <GitFork className="h-4 w-4" />;
+  //     case "achievement":
+  //       return <Trophy className="h-4 w-4" />;
+  //     default:
+  //       return <Activity className="h-4 w-4" />;
+  //   }
+  // };
 
   const getTimeDifference = (completedAt: string) => {
     const a = formatDistanceToNow(new Date(completedAt), { addSuffix: true });
@@ -65,6 +80,7 @@ export default function RecentActivity() {
 
   if (data) {
     const activities = data.data;
+    console.log("activities: ", activities);
     return (
       <Card className="w-full h-full flex flex-col overflow-hidden">
         <div
@@ -84,9 +100,9 @@ export default function RecentActivity() {
         <CardContent className="flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-4">
             <div className="space-y-4">
-              {activities.map((activity, index) => (
+              {activities.map((activity: ActivityItem, index: number) => (
                 <div
-                  key={activity.id}
+                  key={activity._id}
                   className={`p-4 border rounded-lg ${
                     index !== activities.length - 1 ? "mb-4" : ""
                   }`}
@@ -105,7 +121,7 @@ export default function RecentActivity() {
                     {activity.description}
                   </p>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {activity.metadata.map((tag, tagIndex) => (
+                    {activity.metadata.map((tag: string, tagIndex: number) => (
                       <Badge
                         key={tagIndex}
                         variant="secondary"

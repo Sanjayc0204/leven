@@ -13,7 +13,6 @@ import {
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { History, LayoutDashboardIcon, SquarePen } from "lucide-react";
-import { boolean } from "zod";
 
 // Static Menu items outside the component
 const items = [

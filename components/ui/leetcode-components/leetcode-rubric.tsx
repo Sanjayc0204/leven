@@ -54,8 +54,7 @@ export default function LeetcodeRubric() {
   useEffect(() => {
     if (data && !isLoading && !isError) {
       data.data.map((module: moduleDataSchema) => {
-        console.log("Moduledata", module);
-        if (module.moduleId.name === "Leetcode" && schemeObject === null) {
+        if (module.moduleName === "Leetcode" && schemeObject === null) {
           setSchemeObject(module.customizations.pointsScheme);
         }
       });

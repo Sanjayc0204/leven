@@ -1,7 +1,7 @@
 "use client";
 
 import { useCommunityStore } from "@/app/store/communityStore";
-import { useUserProfileStore } from "@/app/store/userProfileStore";
+// import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { useTasksByUserId } from "../queries/fetchTasksByUserId";
 import { useEffect, useState } from "react";
 import {
@@ -24,7 +24,54 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
+import { useTasksByCommunityId } from "../queries/fetchTasksByCommunity";
+
+interface TaskEntry {
+  communityId: string;
+  completedAt: string;
+  description: string;
+  metadata: [string];
+  moduleId: string;
+  points: number;
+  __v: number;
+  _id: string;
+  userId: {
+    username: string;
+    _id: string;
+  };
+}
+
+interface FormattedEntry {
+  date: string;
+  activity: number;
+}
+
+interface CombinedEntry {
+  date: string;
+  activity: number;
+  avgActivity: number;
+}
+
+interface DailyAvg {
+  date: string;
+  activity: number;
+  avgActivity: number;
+  avgPoints: number;
+}
+
+interface ChartCardInterface {
+  chartData: FormattedEntry[];
+  selectedCategory: string;
+  chartConfig: {
+    activity: { label: string; color: string };
+    avgActivity: { label: string; color: string };
+  };
+  setSelectedCategory: React.Dispatch<"Points" | "Tasks">;
+  setRange: (range: string) => void;
+  range: string;
+  dailyAverage: DailyAvg[];
+}
 
 function ChartCard({
   chartData,
@@ -33,18 +80,38 @@ function ChartCard({
   setSelectedCategory,
   setRange,
   range,
-}) {
-  console.log("Chart data:", chartData);
+  dailyAverage,
+}: ChartCardInterface) {
+  console.log("Daily Average", typeof range);
+  const chartDataMap = new Map(
+    chartData.map((item: FormattedEntry) => [item.date, item.activity])
+  );
 
-  const tickFormatter = (dateStr) => {
-    const date = new Date(dateStr);
-    return format(date, "MMM d");
+  console.log("Chartmap", chartDataMap.get("12/1/2024"));
+
+  const combinedDataArray = dailyAverage.map((element: CombinedEntry) => ({
+    date: element.date,
+    avgActivity: element.avgActivity || 0,
+    activity: chartDataMap.get(element.date) || 0,
+  }));
+
+  console.log("chart data3", combinedDataArray);
+  combinedDataArray.sort((element1: CombinedEntry, element2: CombinedEntry) => {
+    const date1 = new Date(element1.date);
+    const date2 = new Date(element2.date);
+
+    return date1.getTime() - date2.getTime();
+  });
+
+  const tickFormatter = (dateStr: string) => {
+    const date = format(new Date(dateStr), "MMM dd");
+    return date;
   };
 
-  if (!chartData || chartData.length === 0) {
+  if (!chartData) {
     return (
       <div className="w-full h-full flex items-center justify-center font-bold text-4xl">
-        No activity data a vailable
+        No activity data available
       </div>
     );
   }
@@ -103,7 +170,7 @@ function ChartCard({
       </CardHeader>
       <ChartContainer config={chartConfig} className="max-h-[200px] w-full">
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData}>
+          <AreaChart data={combinedDataArray}>
             <XAxis dataKey="date" tickFormatter={tickFormatter} />
             <CartesianGrid vertical={false} />
             <ChartTooltip
@@ -117,6 +184,13 @@ function ChartCard({
               fillOpacity={0.4}
               stroke={chartConfig.activity.color}
             />
+            <Area
+              dataKey="avgActivity"
+              type="natural"
+              fill={chartConfig.avgActivity.color}
+              fillOpacity={0.4}
+              stroke={chartConfig.avgActivity.color}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </ChartContainer>
@@ -125,25 +199,41 @@ function ChartCard({
 }
 
 export function DashboardChart() {
-  const userId = useUserProfileStore((state) => state.userProfile?.data._id);
+  // const userId = useUserProfileStore((state) => state.userProfile?.data._id);
   const communityId = useCommunityStore(
     (state) => state.communityData?._id
   ) as string;
-  const [selectedCategory, setSelectedCategory] = useState("Points");
+  const [selectedCategory, setSelectedCategory] = useState<"Points" | "Tasks">(
+    "Points"
+  );
   const [range, setRange] = useState("week");
 
   const { data, isLoading, isError, error } = useTasksByUserId(
-    userId || "",
+    "672ce741c1ef242211fe7d9b",
     communityId || ""
   );
+  const { data: communityTasksData } = useTasksByCommunityId(
+    communityId as string
+  );
 
-  const [activityTimeArray, setActivityTimeArray] = useState([]);
+  const [activityTimeArray, setActivityTimeArray] = useState<FormattedEntry[]>(
+    []
+  );
 
-  const chartConfigMap = {
+  const chartConfigMap: {
+    [key in "Points" | "Tasks"]: {
+      activity: { label: string; color: string };
+      avgActivity: { label: string; color: string };
+    };
+  } = {
     Points: {
       activity: {
         label: "Points",
         color: "hsl(173 58% 39%)",
+      },
+      avgActivity: {
+        label: "Avg Points",
+        color: "hsl(12 76% 61%)",
       },
     },
     Tasks: {
@@ -151,34 +241,139 @@ export function DashboardChart() {
         label: "Tasks",
         color: "hsl(210 58% 50%)",
       },
+      avgActivity: {
+        label: "Avg Tasks",
+        color: "hsl(12 76% 61%)",
+      },
     },
   };
 
   const chartConfig = chartConfigMap[selectedCategory];
 
+  type DailyAverage = {
+    date: string;
+    activity: number;
+    avgPoints: number;
+    avgTasks: number;
+    avgActivity: number;
+  };
+
+  const [dailyAverage, setDailyAverage] = useState<DailyAverage[]>([]);
+
+  useEffect(() => {
+    if (communityTasksData) {
+      console.log("jahangir", communityTasksData.data);
+      const dateMap: Record<
+        string,
+        { points: number; tasks: number; users: Set<string> }
+      > = {};
+
+      communityTasksData.data.forEach((task: TaskEntry) => {
+        const date = formatDate(new Date(task.completedAt), "MM/dd/yyyy");
+        const userId = task.userId;
+
+        if (!dateMap[date]) {
+          dateMap[date] = { points: 0, tasks: 0, users: new Set() };
+        }
+
+        dateMap[date].points += task.points;
+        dateMap[date].tasks += 1;
+        if (!dateMap[date].users.has(userId._id)) {
+          dateMap[date].users.add(userId._id);
+        }
+      });
+
+      let averages: DailyAverage[] = Object.keys(dateMap).map((date) => {
+        const { points, tasks, users } = dateMap[date];
+        if (selectedCategory === "Points") {
+          return {
+            date,
+            avgActivity: points / users.size,
+            avgPoints: 0,
+            avgTasks: 0,
+            activity: 0,
+          };
+        }
+        if (selectedCategory === "Tasks") {
+          console.log("sheesh");
+          return {
+            date,
+            avgActivity: tasks / users.size,
+            avgPoints: 0,
+            avgTasks: 0,
+            activity: 0,
+          };
+        }
+        return {
+          date,
+          avgActivity: 0,
+          avgPoints: 0,
+          avgTasks: 0,
+          activity: 0,
+        };
+      });
+
+      console.log("community averages: ", averages);
+
+      const filterByRange = (days: number) => {
+        const todayDate = Date.now();
+        return averages?.filter((item) => {
+          const itemDate = new Date(item?.date);
+          const diffInDays =
+            (todayDate - itemDate.getTime()) / (1000 * 60 * 60 * 24);
+          console.log("Itemdate:", itemDate, diffInDays);
+          return diffInDays <= days;
+        });
+      };
+
+      if (range === "week") {
+        averages = filterByRange(7);
+      } else if (range === "month") {
+        averages = filterByRange(30);
+      } else if (range === "year") {
+        averages = filterByRange(365);
+      }
+
+      setDailyAverage(averages);
+    }
+  }, [communityTasksData, selectedCategory, range]);
+
   useEffect(() => {
     if (data) {
-      let formattedData = data.reduce((acc, record) => {
-        const date = new Date(record.completedAt).toLocaleDateString();
-        const existingRecord = acc.find((item) => item.date === date);
+      console.log("dashboard data", data);
+      let formattedData = data.reduce(
+        (acc: [FormattedEntry], record: TaskEntry) => {
+          const date = new Date(record.completedAt).toLocaleDateString(
+            "en-US",
+            {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            }
+          );
+          const existingRecord = acc.find((item) => item.date === date);
 
-        if (existingRecord) {
-          existingRecord.activity +=
-            selectedCategory === "Points" ? record.points : 1;
-        } else {
-          acc.push({
-            date,
-            activity: selectedCategory === "Points" ? record.points : 1,
-          });
-        }
-        return acc;
-      }, []);
+          if (existingRecord) {
+            existingRecord.activity +=
+              selectedCategory === "Points" ? record.points : 1;
+          } else {
+            acc.push({
+              date,
+              activity: selectedCategory === "Points" ? record.points : 1,
+            });
+          }
+          return acc;
+        },
+        []
+      );
 
-      const filterByRange = (days) => {
+      const filterByRange = (days: number) => {
         const todayDate = Date.now();
-        return formattedData.filter((item) => {
+        return formattedData.filter((item: FormattedEntry) => {
           const itemDate = new Date(item.date);
-          const diffInDays = (todayDate - itemDate) / (1000 * 60 * 60 * 24);
+          const diffInDays =
+            (todayDate - itemDate.getTime()) / (1000 * 60 * 60 * 24);
+          console.log("Itemdate:", itemDate, diffInDays);
           return diffInDays <= days;
         });
       };
@@ -211,6 +406,7 @@ export function DashboardChart() {
         setSelectedCategory={setSelectedCategory}
         setRange={setRange}
         range={range}
+        dailyAverage={dailyAverage}
       />
     </div>
   );

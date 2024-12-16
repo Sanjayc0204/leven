@@ -47,13 +47,13 @@ export default function CommunityHeader({
   async function handleLeave() {
     setIsLoading(true);
     try {
-      console.log("userprofile", userProfile?.data._id);
+      console.log("userprofile", userProfile?._id);
       const response = await fetch(
         `/api/communities/${currentCommunityID}/leave`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: `${userProfile?.data._id}` }),
+          body: JSON.stringify({ userId: `${userProfile?._id}` }),
         }
       );
 
@@ -92,7 +92,7 @@ export default function CommunityHeader({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: `${userProfile?.data._id}` }),
+          body: JSON.stringify({ userId: `${userProfile?._id}` }),
         }
       );
 

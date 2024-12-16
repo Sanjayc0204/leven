@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { customizeModule, deleteModuleFromCommunity } from '@/services/communityService';
+import { deleteModuleFromCommunity } from '@/services/communityService';
 import { Types } from 'mongoose';
 
 /**

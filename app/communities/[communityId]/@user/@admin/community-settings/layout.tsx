@@ -1,4 +1,3 @@
-import ExitSettings from "@/app/user/settings/components/exit-settings";
 import { SidebarNav } from "@/app/user/settings/components/nav-bar";
 import { Separator } from "@/components/ui/separator";
 

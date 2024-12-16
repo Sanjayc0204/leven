@@ -30,7 +30,6 @@ export default function CommunityInformationForm() {
   const [imagePreview, setImagePreview] = useState("");
   const router = useRouter();
 
-  const stepData = useStepStore((state) => state.stepData);
   const setStepData = useStepStore((state) => state.setStepData);
   const formData = useStepStore((state) => state.formData);
   const setFormData = useStepStore((state) => state.setFormData);

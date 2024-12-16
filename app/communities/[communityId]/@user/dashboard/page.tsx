@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCommunityStore } from "@/app/store/communityStore";
 import { useCommunityById } from "@/components/queries/fetchCommunityById";
 import LeaderboardAlt from "@/components/ui/leaderboard-alt";
@@ -12,7 +12,7 @@ import "react-resizable/css/styles.css";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { DashboardChart } from "@/components/ui/dashboard-chart";
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
+// const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface CommunityPageProps {
   params: { communityId: string };
@@ -29,13 +29,11 @@ const dashboardComponents = [
 export default function DashboardPage({ params }: CommunityPageProps) {
   const { communityId } = params;
   const setCommunity = useCommunityStore((state) => state.setCommunityData);
-  const [isDataReady, setDataReady] = useState(false);
   const { isLoading, isError, data, error } = useCommunityById(communityId, -1);
 
   useEffect(() => {
     if (data) {
       setCommunity(data);
-      setDataReady(true);
     }
   }, [data, setCommunity]);
 

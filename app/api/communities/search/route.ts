@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Community from '@/models/Community.model';
-import { connectToDB } from '@/util/connectToDB';
+import { NextRequest, NextResponse } from "next/server";
+import Community from "@/models/Community.model";
+import { connectToDB } from "@/util/connectToDB";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Search for communities by name (case-insensitive, partial match).
@@ -14,18 +16,30 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const name = req.nextUrl.searchParams.get("name");
     if (!name) {
-      return new NextResponse(JSON.stringify({ success: false, error: 'Missing search parameter: name' }), { status: 400 });
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          error: "Missing search parameter: name",
+        }),
+        { status: 400 }
+      );
     }
 
     // Perform a case-insensitive, partial match on the community name
     const communities = await Community.find({
-      name: { $regex: name, $options: 'i' }  // Case-insensitive partial match
+      name: { $regex: name, $options: "i" }, // Case-insensitive partial match
     });
 
-    return new NextResponse(JSON.stringify({ success: true, data: communities }), { status: 200 });
+    return new NextResponse(
+      JSON.stringify({ success: true, data: communities }),
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('Error searching communities:', error);
-    return new NextResponse(JSON.stringify({ success: false, error: 'Error searching communities' }), { status: 500 });
+    console.error("Error searching communities:", error);
+    return new NextResponse(
+      JSON.stringify({ success: false, error: "Error searching communities" }),
+      { status: 500 }
+    );
   }
 }
 

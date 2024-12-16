@@ -10,8 +10,6 @@ import { Badge } from "./badge";
 import { useLeaderboard } from "../queries/fetchLeaderboard";
 import LeaderboardSkeleton from "./leaderboard-skeleton";
 import { useCommunityStore } from "@/app/store/communityStore";
-import { ICommunity } from "@/models/Community.model";
-import { IUser } from "@/models/User.model";
 
 interface LeaderboardUser {
   userId: string;
@@ -62,6 +60,7 @@ interface leaderboardDivProps {
 }
 
 function LeaderboardCardDiv({ name, points, img, index }: leaderboardDivProps) {
+  console.log();
   leaderboardData.sort((a, b) => b.points - a.points);
   return (
     <div

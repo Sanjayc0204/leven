@@ -55,7 +55,7 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
       setCommunityData(communityData);
     }
     if (userData) {
-      setUserData(userData);
+      setUserData(userData.data);
     }
   }, [communityData, userData, setCommunityData, setUserData]);
 
