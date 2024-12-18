@@ -21,6 +21,8 @@ const handler = async (req: any, res: any) => {
     trustHeaders(req);
   }
 
+  console.log(process.env.GOOGLE_CLIENT_ID)
+  
   return NextAuth(req, res, {
     providers: [
       GoogleProvider({
