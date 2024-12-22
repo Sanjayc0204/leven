@@ -23,7 +23,7 @@ interface Module {
 }
 
 async function fetchModules() {
-  const res = await fetch("/api/modules");
+  const res = await fetch("/api/modules/moduleList");
   if (res.ok) {
     const data = await res.json();
     return data.data;
