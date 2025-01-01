@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/util/connectToDB";
 import User, { IUser } from "@/models/User.model";
 import mongoose from "mongoose";
-import { NextRequest } from "next/server";
+import type { NextApiRequest, NextApiResponse } from "next";
 import type { Session, DefaultUser } from "next-auth";
 
 interface GoogleProfile {
@@ -12,13 +12,23 @@ interface GoogleProfile {
   name?: string;
 }
 
-export async function GET(req: NextRequest) {
+// Function to set trusted headers (for reverse proxies/load balancers)
+const trustHeaders = (req: NextApiRequest) => {
+  req.headers["x-forwarded-proto"] = "https";
+};
+
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  // Apply trusted headers in production
+  if (process.env.NODE_ENV === "production") {
+    trustHeaders(req);
+  }
+
   // Debugging logs
   console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
   console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
   console.log("Incoming headers:", req.headers);
 
-  return NextAuth({
+  return NextAuth(req, res, {
     providers: [
       GoogleProvider({
         clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -103,9 +113,7 @@ export async function GET(req: NextRequest) {
       },
     },
     debug: true,
-  })(req);
+  });
 };
 
-export async function POST(req: NextRequest) {
-  return GET(req);
-}
+export { handler as GET, handler as POST };
