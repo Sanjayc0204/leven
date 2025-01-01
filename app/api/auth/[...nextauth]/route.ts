@@ -3,6 +3,8 @@ import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/util/connectToDB";
 import User, { IUser } from "@/models/User.model";
 import mongoose from "mongoose";
+import type { NextApiRequest, NextApiResponse } from "next";
+import type { Session, DefaultUser } from "next-auth";
 
 interface GoogleProfile {
   picture?: string;
@@ -10,19 +12,22 @@ interface GoogleProfile {
   name?: string;
 }
 
-// Set trusted headers (for reverse proxies/load balancers)
-const trustHeaders = (req: any) => {
+// Function to set trusted headers (for reverse proxies/load balancers)
+const trustHeaders = (req: NextApiRequest) => {
   req.headers["x-forwarded-proto"] = "https";
 };
 
-const handler = async (req: any, res: any) => {
-  // Force HTTPS headers for production
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  // Apply trusted headers in production
   if (process.env.NODE_ENV === "production") {
     trustHeaders(req);
   }
 
-  console.log(process.env.GOOGLE_CLIENT_ID)
-  
+  // Debugging logs
+  console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+  console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+  console.log("Incoming headers:", req.headers);
+
   return NextAuth(req, res, {
     providers: [
       GoogleProvider({
@@ -32,7 +37,7 @@ const handler = async (req: any, res: any) => {
     ],
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
-      async session({ session }) {
+      async session({ session }: { session: Session }) {
         await connectToDB();
 
         const sessionUser: IUser | null = await User.findOne({
@@ -47,7 +52,7 @@ const handler = async (req: any, res: any) => {
 
         return session;
       },
-      async signIn({ user, profile }) {
+      async signIn({ user, profile }: { user: DefaultUser; profile?: GoogleProfile }) {
         await connectToDB();
 
         const userExists = await User.findOne({ email: user.email });
@@ -94,9 +99,20 @@ const handler = async (req: any, res: any) => {
       },
     },
     pages: {
-      error: "/auth/error", // Custom error page
+      error: "/auth/error",
     },
-    debug: true, // Enable logging in production for debugging
+    logger: {
+      error(code, metadata) {
+        console.error("NextAuth Error:", code, metadata);
+      },
+      warn(message) {
+        console.warn("NextAuth Warning:", message);
+      },
+      debug(message) {
+        console.debug("NextAuth Debug:", message);
+      },
+    },
+    debug: true,
   });
 };
 
