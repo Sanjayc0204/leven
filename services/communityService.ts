@@ -170,13 +170,21 @@ export async function updateCommunity(
     throw new Error("You are not authorized to update this community");
   }
 
+  // Update general fields
   Object.keys(updateData).forEach((key) => {
-    (community as any)[key] = updateData[key as keyof ICommunity];
+    if (key === "settings") {
+      // Merge nested settings updates
+      community.settings = { ...community.settings, ...updateData.settings };
+    } else {
+      // Update top-level fields
+      (community as any)[key] = updateData[key as keyof ICommunity];
+    }
   });
 
   await community.save();
   return community;
 }
+
 
 /**
  * Deletes a community and removes it from all users' community lists.

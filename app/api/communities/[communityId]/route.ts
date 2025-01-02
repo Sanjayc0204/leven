@@ -32,8 +32,10 @@ export async function GET(req: NextRequest, { params }: { params: { communityId:
   }
 }
 
+
+
 /**
- * Update community information, including title, description, image and (future) settings.
+ * Update community information, including title, description, image, and privacy settings.
  *
  * @param {NextRequest} req - The incoming request object.
  * @param {Object} params - The request parameters.
@@ -57,7 +59,12 @@ export async function PUT(req: NextRequest, { params }: { params: { communityId:
       return new NextResponse('Missing update data or admin ID', { status: 400 });
     }
 
-    const updatedCommunity = await updateCommunity(new Types.ObjectId(communityId), updateData, new Types.ObjectId(adminId));
+    // Call service to update the community
+    const updatedCommunity = await updateCommunity(
+      new Types.ObjectId(communityId),
+      updateData,
+      new Types.ObjectId(adminId)
+    );
 
     return new NextResponse(JSON.stringify(updatedCommunity), { status: 200 });
   } catch (error) {
@@ -65,6 +72,8 @@ export async function PUT(req: NextRequest, { params }: { params: { communityId:
     return new NextResponse('Error updating community', { status: 500 });
   }
 }
+
+
 
 /**
  * Delete a community by its ID.

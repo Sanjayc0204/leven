@@ -60,8 +60,55 @@ export async function generateInviteLink(communityId: Types.ObjectId, userId: st
   }
   
 
-  
+// Get community through invite link so we can see description before continuing action
 
+  export async function fetchCommunityByInvite(token: string) {
+    await connectToDB();
+    console.log('[fetchCommunityByInvite] Start');
+    console.log(`[fetchCommunityByInvite] Received token: ${token}`);
+  
+    try {
+      // Find the community using the invite link token
+      console.log('[fetchCommunityByInvite] Querying database for token...');
+      const community = await Community.findOne({ 'settings.privacy.inviteLink': token }).exec();
+  
+      if (!community) {
+        console.error('[fetchCommunityByInvite] No community found for the given token');
+        throw new Error('Invalid or expired invite link');
+      }
+  
+      console.log('[fetchCommunityByInvite] Ensuring settings and privacy exist...');
+      community.settings = community.settings || {};
+      community.settings.privacy = community.settings.privacy || {
+        isPrivate: false,
+        inviteLink: null,
+        inviteExpiration: null,
+      };
+  
+      console.log('[fetchCommunityByInvite] Validating token expiration...');
+      if (!community.settings.privacy.inviteExpiration || new Date() > community.settings.privacy.inviteExpiration) {
+        console.error('[fetchCommunityByInvite] Invite link has expired');
+        throw new Error('Invite link has expired');
+      }
+  
+      console.log('[fetchCommunityByInvite] Community found:', community.name);
+  
+      // Return only the necessary details about the community
+      return {
+        id: community._id,
+        name: community.name,
+        description: community.description,
+        isPrivate: community.settings.privacy.isPrivate,
+        membersCount: community.members.length,
+        creator: community.creator_ID,
+      };
+    } catch (error) {
+      const err = error as Error;
+      console.error('[fetchCommunityByInvite] Error:', err.message);
+      throw error;
+    }
+  }
+  
 
 
   export async function joinCommunityViaInvite(token: string, userId: string) {
