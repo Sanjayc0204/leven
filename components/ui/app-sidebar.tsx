@@ -12,7 +12,12 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { History, LayoutDashboardIcon, SquarePen } from "lucide-react";
+import {
+  History,
+  LayoutDashboardIcon,
+  SquarePen,
+  UserPlus,
+} from "lucide-react";
 
 // Static Menu items outside the component
 const items = [
@@ -38,6 +43,10 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
     ? pathname
     : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/dashboard`;
 
+  const invitePath = pathname.includes("invite-users")
+    ? pathname
+    : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/invite-users`;
+
   const editCommunityPath = pathname.includes("edit-community")
     ? pathname
     : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/edit-modules`;
@@ -59,6 +68,11 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
       title: "Activity History",
       url: activityHistoryPath, // Dynamically generate the dashboard path
       icon: History,
+    },
+    {
+      title: "Invite Users",
+      url: invitePath,
+      icon: UserPlus,
     },
   ];
 

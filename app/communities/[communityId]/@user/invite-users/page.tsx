@@ -61,7 +61,7 @@ export default function CommunityPage() {
         <div className="w-[300px]">
           <div className="relative">
             <Copy
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5"
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 cursor-pointer"
               onClick={() => handleCopy()}
             />
             <Input

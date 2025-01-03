@@ -30,7 +30,8 @@ export default function Layout({ admin, nonadmin, children }: LayoutProps) {
     setShouldRenderSlots(
       !pathname.includes("/dashboard") &&
         !pathname.includes("/activity-history") &&
-        !pathname.includes("/user")
+        !pathname.includes("/user") &&
+        !pathname.includes("/invite-users")
     );
   }, [pathname]);
 
