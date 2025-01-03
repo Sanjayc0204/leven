@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { joinCommunityViaInvite } from "@/services/inviteService";
 
-interface errorInterface {
-  error: {
-    message: string;
-  };
-}
-
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const { token } = await req.json();
