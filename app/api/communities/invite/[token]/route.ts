@@ -24,7 +24,9 @@ export async function GET(
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[GET] Error fetching community by invite link:", error);
+    // Log the error to make use of the variable
+    console.error("[GET] Error fetching community by invite link:", error, error);
+
     return new NextResponse("Invalid or expired invite link", { status: 404 });
   }
 }
