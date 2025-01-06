@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import GeneralSettingsForm from "./general-settings-form";
 
 export default function CommunityInformationPage() {
   return (
@@ -12,6 +13,7 @@ export default function CommunityInformationPage() {
           </p>
         </div>
         <Separator />
+        <GeneralSettingsForm />
       </div>
     </>
   );

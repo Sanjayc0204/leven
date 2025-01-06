@@ -52,7 +52,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
         return session;
       },
-      async signIn({ user, profile }: { user: DefaultUser; profile?: GoogleProfile }) {
+      async signIn({
+        user,
+        profile,
+      }: {
+        user: DefaultUser;
+        profile?: GoogleProfile;
+      }) {
         await connectToDB();
 
         const userExists = await User.findOne({ email: user.email });

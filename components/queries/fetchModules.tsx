@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 const fetchModules = async () => {
-  const res = await fetch("/api/modules");
+  const res = await fetch("/api/modules/moduleList");
   if (!res.ok) {
     throw new Error("Failed to fetch modules");
   }
