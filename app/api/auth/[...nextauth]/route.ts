@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "@/util/connectToDB";
@@ -44,13 +44,6 @@ export async function handler(req: NextRequest) {
         }
         return session;
       },
-      async signIn({
-        user,
-        profile,
-      }: {
-        user: DefaultUser;
-        profile?: GoogleProfile;
-      }) {
       async signIn({ user, profile }) {
         await connectToDB();
         const userExists = await User.findOne({ email: user.email });
@@ -75,7 +68,10 @@ export async function handler(req: NextRequest) {
           });
         } else {
           const googleProfile = profile as { picture?: string };
-          if (googleProfile.picture && userExists.image !== googleProfile.picture) {
+          if (
+            googleProfile.picture &&
+            userExists.image !== googleProfile.picture
+          ) {
             userExists.image = googleProfile.picture;
           }
           userExists.last_login_date = new Date();

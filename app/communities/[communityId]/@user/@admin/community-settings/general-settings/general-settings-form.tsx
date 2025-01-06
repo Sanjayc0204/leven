@@ -1,5 +1,6 @@
 "use client";
 import { useCommunityStore } from "@/app/store/communityStore";
+import { useUserProfileStore } from "@/app/store/userProfileStore";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -12,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -36,11 +38,16 @@ export default function GeneralSettingsForm() {
     } | null
   )?.settings;
 
+  const userId = useUserProfileStore((state) => state.userProfile)?._id;
+  const communityName = useCommunityStore((state) => state.communityData)?.name;
+
   const [formData, setFormData] = useState({
     leaderboard_enable: true,
     leaderboard_streaks: true,
     private: false,
   });
+
+  const mutation = useMutation({ mutationFn: updateGeneralSettings });
 
   useEffect(() => {
     if (communitySettingsData) {
@@ -50,7 +57,7 @@ export default function GeneralSettingsForm() {
         private: communitySettingsData?.privacy?.isPrivate || false,
       });
     }
-  }, [communitySettingsData]);
+  }, [communitySettingsData, formData]);
 
   const form = useForm<GeneralSettingsValues>({
     resolver: zodResolver(generalSettingsFormSchema),
@@ -62,6 +69,40 @@ export default function GeneralSettingsForm() {
     console.log("Community Settings: ", communitySettingsData);
   }
 
+  function updateGeneralSettings(values: GeneralSettingsValues) {
+    return fetch(`/api/communities/inviteJoin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        updateData: {
+          name: communityName,
+          settings: {
+            privacy: {
+              isPrivate: values.private,
+            },
+            leaderboard: {
+              enabled: values.leaderboard_enable,
+            },
+          },
+        },
+        adminId: userId,
+      }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          throw new Error(`Error: ${errorResponse.error}`);
+        }
+        return response.json();
+      })
+      .catch((error) => {
+        console.error("Error joining community via invite:", error.message);
+        throw error;
+      });
+  }
+
   const onSubmit = (values: GeneralSettingsValues) => {
     console.log("Submitting data!");
     if (
@@ -70,6 +111,7 @@ export default function GeneralSettingsForm() {
       values.private !== formData.private
     ) {
       setFormData(values);
+      mutation.mutate(values);
     }
   };
 
