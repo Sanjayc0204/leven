@@ -85,8 +85,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           const googleProfile = profile as GoogleProfile;
 
           if (
+            
             googleProfile.picture &&
+           
             userExists.image !== googleProfile.picture
+          
           ) {
             userExists.image = googleProfile.picture;
           }
