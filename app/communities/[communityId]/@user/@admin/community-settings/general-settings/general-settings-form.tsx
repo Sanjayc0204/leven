@@ -40,6 +40,7 @@ export default function GeneralSettingsForm() {
 
   const userId = useUserProfileStore((state) => state.userProfile)?._id;
   const communityName = useCommunityStore((state) => state.communityData)?.name;
+  const communityId = useCommunityStore((state) => state.communityData)?._id;
 
   const [formData, setFormData] = useState({
     leaderboard_enable: true,
@@ -57,7 +58,7 @@ export default function GeneralSettingsForm() {
         private: communitySettingsData?.privacy?.isPrivate || false,
       });
     }
-  }, [communitySettingsData, formData]);
+  }, [communitySettingsData]);
 
   const form = useForm<GeneralSettingsValues>({
     resolver: zodResolver(generalSettingsFormSchema),
@@ -70,8 +71,9 @@ export default function GeneralSettingsForm() {
   }
 
   function updateGeneralSettings(values: GeneralSettingsValues) {
-    return fetch(`/api/communities/inviteJoin`, {
-      method: "POST",
+    console.log("Updating data!");
+    return fetch(`/api/communities/${communityId}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -96,6 +98,7 @@ export default function GeneralSettingsForm() {
           throw new Error(`Error: ${errorResponse.error}`);
         }
         return response.json();
+        console.log("Updated!");
       })
       .catch((error) => {
         console.error("Error joining community via invite:", error.message);
@@ -111,6 +114,7 @@ export default function GeneralSettingsForm() {
       values.private !== formData.private
     ) {
       setFormData(values);
+      console.log("matating");
       mutation.mutate(values);
     }
   };

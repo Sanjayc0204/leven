@@ -1,17 +1,41 @@
+"use client";
+
 import { SidebarNav } from "@/app/user/settings/components/nav-bar";
 import { Separator } from "@/components/ui/separator";
-
-const sidebarNavItems = [
-  { title: "Community Profile", href: "#" },
-  { title: "Modules", href: "#" },
-  { title: "General", href: "#" },
-];
+import { usePathname } from "next/navigation";
 
 interface settingsLayoutProps {
   children: React.ReactNode;
 }
 
 export default function SettingsLayout({ children }: settingsLayoutProps) {
+  const pathname = usePathname();
+  const filteredPathname = pathname?.split("/").filter(Boolean) || ["a", "b"];
+
+  const profilePath =
+    filteredPathname[filteredPathname.length - 1] === "community-settings"
+      ? pathname
+      : `/${filteredPathname[0] || ""}/${
+          filteredPathname[1] || ""
+        }/community-settings`;
+
+  const generalSettingsPath = pathname?.includes("general-settings")
+    ? pathname
+    : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/${
+        filteredPathname[2] || ""
+      }/general-settings`;
+
+  const modulesPath = pathname?.includes("modules")
+    ? pathname
+    : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/${
+        filteredPathname[2] || ""
+      }/modules`;
+
+  const sidebarNavItems = [
+    { title: "Community Profile", href: profilePath },
+    { title: "Modules", href: modulesPath },
+    { title: "General", href: generalSettingsPath },
+  ];
   return (
     <div className="hidden space-y-3 p-5 pb-8 md:block">
       <div className="space-y-0.5">

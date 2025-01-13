@@ -13,6 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
+  Cog,
   History,
   LayoutDashboardIcon,
   SquarePen,
@@ -39,7 +40,7 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
   console.log(`${filteredPathname[0]}/${filteredPathname[1]}/dashboard`);
 
   // Determine relative dashboard URL
-  const dashboardPath = pathname.includes("dashboard")
+  const dashboardPath = pathname?.includes("dashboard")
     ? pathname
     : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/dashboard`;
 
@@ -50,6 +51,12 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
   const editCommunityPath = pathname.includes("edit-community")
     ? pathname
     : `/${filteredPathname[0] || ""}/${filteredPathname[1] || ""}/edit-modules`;
+
+  const settingsPath = pathname.includes("community-settings")
+    ? pathname
+    : `/${filteredPathname[0] || ""}/${
+        filteredPathname[1] || ""
+      }/community-settings`;
 
   const activityHistoryPath = pathname.includes("activity-history")
     ? pathname
@@ -81,6 +88,11 @@ export function AppSidebar({ communityName, isAdmin }: AppSidebarProps) {
       title: "Edit Modules",
       url: editCommunityPath,
       icon: SquarePen,
+    },
+    {
+      title: "Settings",
+      url: settingsPath,
+      icon: Cog,
     },
   ];
 

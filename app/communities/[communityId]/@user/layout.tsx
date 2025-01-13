@@ -21,17 +21,17 @@ interface LayoutProps {
 
 export default function Layout({ admin, nonadmin, children }: LayoutProps) {
   const pathname = usePathname();
-  const communityId = pathname.split("/")[2];
+  const communityId = pathname?.split("/")[2];
   const session = useSession();
 
   const [shouldRenderSlots, setShouldRenderSlots] = useState(true);
 
   useEffect(() => {
     setShouldRenderSlots(
-      !pathname.includes("/dashboard") &&
-        !pathname.includes("/activity-history") &&
-        !pathname.includes("/user") &&
-        !pathname.includes("/invite-users")
+      !pathname?.includes("/dashboard") &&
+        !pathname?.includes("/activity-history") &&
+        !pathname?.includes("/user") &&
+        !pathname?.includes("/invite-users")
     );
   }, [pathname]);
 

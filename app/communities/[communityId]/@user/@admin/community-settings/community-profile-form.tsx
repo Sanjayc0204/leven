@@ -16,6 +16,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useCommunityStore } from "@/app/store/communityStore";
+import { useMutation } from "@tanstack/react-query";
+import { useUserProfileStore } from "@/app/store/userProfileStore";
 
 const communityInformationSchema = z.object({
   name: z.string().min(1, "Community name is required"),
@@ -28,6 +30,8 @@ type CommunityInformationValues = z.infer<typeof communityInformationSchema>;
 export default function CommunityInformationForm() {
   const [imagePreview, setImagePreview] = useState("");
   const communityData = useCommunityStore((state) => state.communityData);
+  const mutation = useMutation({ mutationFn: updateCommunityProfile });
+  const userId = useUserProfileStore((state) => state.userProfile?._id);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -65,8 +69,39 @@ export default function CommunityInformationForm() {
       values.image !== formData.image
     ) {
       setFormData(values);
+      mutation.mutate(values);
     }
   };
+
+  function updateCommunityProfile(values: CommunityInformationValues) {
+    console.log("Updating data!");
+    return fetch(`/api/communities/${communityData?._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        updateData: {
+          name: values.name,
+          description: values.description,
+          image: values.image,
+        },
+        adminId: userId,
+      }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          throw new Error(`Error: ${errorResponse.error}`);
+        }
+        return response.json();
+        console.log("Updated!");
+      })
+      .catch((error) => {
+        console.error("Error joining community via invite:", error.message);
+        throw error;
+      });
+  }
 
   return (
     <div className="pb-4">
